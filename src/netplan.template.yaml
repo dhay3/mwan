@@ -1,0 +1,42 @@
+network:
+  ethernets:
+    ens19:
+      addresses:
+        - 10.0.0.71/24
+      nameservers:
+        addresses:
+          - 223.6.6.6
+          - 114.114.115.115
+        search: []
+      routes:
+        - to: default
+          via: 10.0.0.254
+    ens18:
+      addresses:
+        - 192.168.3.71/24
+      nameservers:
+        search: []
+        addresses:
+          - 223.6.6.6
+          - 114.114.115.115
+      routes:
+        - to: default
+          via: 192.168.3.254
+          metric: 100
+    ens20:
+      addresses:
+        - 192.168.10.71/24
+      nameservers:
+        search: []
+      routes:
+        - to: 192.168.130.0/24
+          via: 192.168.10.254
+        - to: 172.16.0.0/24
+          via: 192.168.10.254
+        - to: 172.28.10.0/24
+          via: 192.168.10.254
+        - to: 192.168.128.0/24
+          via: 192.168.10.254
+        - to: 192.168.129.0/24
+          via: 192.168.10.254
+  version: 2
