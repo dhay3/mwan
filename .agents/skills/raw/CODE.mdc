@@ -1,0 +1,23 @@
+---
+description: code principles
+alwaysApply: true
+---
+
+- Code style strictly adheres to the [Google Style Guide](https://google.github.io/styleguide).
+- Code should be concise and easily readable, primarily for humans to read.
+- If the same logic appears three times, consider abstracting it into a reusable component and decide based on the assessed benefits of abstraction.
+- Variables and functions must be accompanied by detailed comments. eg
+```
+def func(var1, var2):
+ """
+ @description describe this function...
+ @parameter var1 describe this variable...
+ @parameter var2 describe this variable...
+ @return var4 describe this variable...
+ """
+ # describe this variable
+ var3 = var1 + var2
+ var4 = int(var3)
+ return var4
+```
+- Privacy content, eg, password, token, etc., should be encrypted or hashed; API keys should be stored in `.env` file and not committed to git; authentication or authorization should be integrated with a human-machine verification if it is a web application.

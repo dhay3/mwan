@@ -1,0 +1,40 @@
+{
+  "editor.fontSize": 17,
+  "editor.tabSize": 2,
+  "editor.autoIndent": "full",
+  "editor.autoIndentOnPaste": true,
+  "editor.wordWrap": "on",
+  "editor.formatOnPaste": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "workbench.sideBar.location": "right",
+  "extensions.ignoreRecommendations": true,
+  "files.exclude": {
+    "**/.conda": true,
+    "**/.ruff_cache": true,
+    "**/.idea": true,
+    "**/__pycache__": true,
+    "**/node_modules": true
+  },
+  "files.associations": {
+    "*.mdc": "markdown",
+    "*.mdx": "markdown"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "prettier.jsxSingleQuote": true,
+  "prettier.singleQuote": true,
+  "ruff.configuration": {
+    "format": {
+      "quote-style": "single"
+    }
+  },
+  "terminal.integrated.fontLigatures.enabled": true,
+  "terminal.integrated.gpuAcceleration": "on",
+  "terminal.integrated.copyOnSelection": true
+}

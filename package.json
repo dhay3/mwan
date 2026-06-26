@@ -1,0 +1,32 @@
+{
+  "name": "codespace",
+  "version": "1.0.0",
+  "repository": "git@github.com:dhay3/codespace.git",
+  "author": "cyberpelican <62749885+dhay3@users.noreply.github.com>",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "commit": "cz"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "@commitlint/prompt": "^21.0.2",
+    "@prettier/plugin-xml": "^3.4.2",
+    "cz-conventional-changelog": "^3.3.0",
+    "gitmoji-cli": "^9.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "prettier-plugin-sh": "^0.18.0",
+    "prettier-plugin-sql": "^0.19.2",
+    "prettier-plugin-toml": "^2.0.6"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}

@@ -1,0 +1,97 @@
+name: Init CITATION.cff
+on:
+  workflow_dispatch:
+    inputs:
+      cff-version:
+        description: "CFF version"
+        default: 1.2.0
+        required: false
+        type: string
+      citation-title:
+        description: "citation title"
+        required: true
+        type: string
+      citation-type:
+        description: "citation type"
+        default: software
+        required: true
+        type: choice
+        options:
+          - software
+          - dataset
+      citation-message:
+        description: "citation message"
+        required: false
+        type: string
+      author-orcid:
+        description: "citation ORCID"
+        default: "https://orcid.org/0009-0000-6176-6323"
+        required: false
+        type: string
+env:
+  GH_TOKEN: ${{ github.token }}
+  GH_OWNER: ${{ github.repository_owner }}
+  GH_REPO: ${{ github.server_url }}/${{ github.repository }}
+jobs:
+  evars:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      gh_license: ${{ steps.gh_license.outputs.gh_license }}
+      citation_message: ${{ steps.citation_message.outputs.citation_message }}
+    steps:
+      - id: gh_license
+        name: Get repository license
+        run: |
+          echo "gh_license=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/${{ github.repository }}/license | jq '.license.spdx_id')" >> "${GITHUB_OUTPUT}"
+      - id: citation_message
+        name: Citation message
+        run: |
+          if [[ -z "${{ inputs.citation-message }}" ]]; then
+            echo "citation_message=If you use this ${{ inputs.citation-type }}, please cite it using the metadata from this file." >> "${GITHUB_OUTPUT}"
+          else
+            echo "citation_message=${{ inputs.citation-message }}" >> "${GITHUB_OUTPUT}"
+          fi
+  create-citation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 30
+    needs:
+      - evars
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Create CITATION.cff
+        env:
+          CFF_VERSION: ${{ inputs.cff-version }}
+          TITLE: ${{ inputs.citation-title }}
+          MESSAGE: ${{ needs.evars.outputs.citation_message }}
+          TYPE: ${{ inputs.citation-type }}
+          ORCID: ${{ inputs.author-orcid }}
+          GH_LICENSE: ${{ needs.evars.outputs.gh_license }}
+        run: |
+          cat > CITATION.cff << EOF
+          # This CITATION.cff file was generated with cffinit.
+          # Visit https://bit.ly/cffinit to generate yours today!
+
+          cff-version: ${{ env.CFF_VERSION }}
+          title: ${{ env.TITLE }}
+          message: >-
+            ${{ env.MESSAGE }}
+          type: ${{ env.TYPE }}
+          authors:
+            - given-names: ${{ env.GH_OWNER }}
+              orcid: '${{ env.ORCID }}'
+          repository-code: '${{ env.GH_REPO }}'
+          license: ${{ env.GH_LICENSE }}
+          EOF
+          cat CITATION.cff
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git pull
+          git add CITATION.cff
+          git commit -m "🤖 add citation.cff"
+          git push

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+gitleaks git . --verbose
+lint-staged

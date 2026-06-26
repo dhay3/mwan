@@ -1,0 +1,60 @@
+---
+description: code quality principles
+alwaysApply: true
+---
+
+# Code Quality Principles
+
+This document defines fundamental principles for writing high-quality, maintainable code.
+
+---
+
+## Principle 1 - Code Style
+
+**!!! `.editorconfig` takes precedence !!!**
+
+Code style (including comments) adheres to the [Google Style Guide](https://google.github.io/styleguide) per language.
+
+---
+
+## Principle 2 - Decoupling
+
+Components should be decoupled as much as possible, but that doesn't mean no coupling at all.
+
+---
+
+## Principle 3 - Don't repeat yourself
+
+Do not duplicate logic, configuration, constants, or patterns. If similar code already exists(current project or existing open-source libraries), reuse, refactor, or reference it instead of rewriting it.
+
+---
+
+## Principle 4 - Testability
+
+Ensure comprehensive test coverage:
+
+1. **Test Implementation**
+   - **Normal Cases**: Happy path scenarios
+   - **Boundary Cases**: Edge conditions and limits
+   - **Exceptional Cases**: Error conditions and invalid inputs
+   - **Integration Tests**: Component interactions
+
+2. **Test Execution**
+   - Run all test suites
+   - Achieve required coverage thresholds
+   - If tests fail:
+     - Attempt autonomous fix
+     - If fix unsuccessful: **INTERRUPT** with detailed error analysis
+
+3. **Quality Checks**
+   - Run diagnostics on modified files
+   - Fix linting and formatting issues
+   - Ensure code meets project quality standards
+
+## Principle 5 - Security
+
+
+
+- Treat all inputs, dependencies, and execution paths as zero-trusted
+- Implement robust authentication, authorization, and CAPTCHA when applicable
+- Protect sensitive data through encryption and environment-based configuration(`.env`), never hardcoding secrets

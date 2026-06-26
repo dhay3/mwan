@@ -1,0 +1,16 @@
+name: Pull Request
+description: Make a pull request want to discuss it?
+labels: ["Discussion", "PR"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        1. Please write in English, this is the language all maintainers can speak and write.
+        2. Please only use this form to discuss PRs and **not** bugs or questions.
+        3. Please take a moment to check that your PR hasn't already been suggested.
+  - type: textarea
+    id: description
+    attributes:
+      label: PR Description
+    validations:
+      required: true

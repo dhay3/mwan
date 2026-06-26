@@ -1,0 +1,83 @@
+name: Bug Report
+description: Found something you weren't expecting?  Report it here!
+labels: ["Unconfirmed Bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report.
+        NOTE: Please read the instructions below before filling the form.
+  - type: markdown
+    attributes:
+      value: |
+        1. Please write in English, this is the language all maintainers can speak and write.
+        2. Please only use this form to submit bugs and **not** feature requests or questions.
+        3. Please take a moment to check that your issue hasn't already been reported.
+  - type: checkboxes
+    id: before-ask
+    attributes:
+      label: Before you ask
+      description: Check these boxes before you asking.
+      options:
+        - label: I have read the documentation
+        - label: I have checked the issue hasn't been reported in issues and discussions
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Description
+      description: |
+        Describe the symptoms of your issue in chronological order. If you can, provide screenshots or screen recordings to demonstrate the issue.
+    validations:
+      required: true
+  - type: input
+    id: who
+    attributes:
+      label: Which git version?
+      description: |
+        The version you are running. You can use `git --version` to display the version
+      placeholder: |
+        eg. 
+        git version 2.51.0
+    validations:
+      required: true
+  - type: dropdown
+    id: where-installation-type
+    attributes:
+      label: Installation Type
+      options:
+        - Linux, MacOS, or Windows Package manager (apt, pacman, eopkg, choco, brew, ...)
+        - AUR
+        - AppImage
+        - Flatpak
+        - Snap
+        - Package from Github Releases
+        - Compiled from source
+    validations:
+      required: true
+  - type: textarea
+    id: where-enviroment
+    attributes:
+      label: Operating System and environment
+      description: |
+        The Operating System and environment you are running on.
+      placeholder: |
+        eg. 
+        6.12.44-2-MANJARO
+        XDG_CURRENT_DESKTOP=KDE
+        XDG_SESSION_TYPE=wayland
+    validations:
+      required: true
+  - type: textarea
+    id: how
+    attributes:
+      label: Steps to reproduce
+      description: Describe the steps to reproduce the bug.
+      placeholder: |
+        1. git add .
+        2. git commit -m "A commit message"
+        3. git push
+        4. ...
+    validations:
+      required: false

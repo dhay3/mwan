@@ -1,0 +1,5 @@
+{
+  "*.py": ["ruff check", "ruff format"],
+  "*.sh": ["shellcheck", "prettier --write"],
+  "*.{js,jsx,ts,tsx,css,html,xml,yml,yaml,json,sql}": "prettier --write"
+}

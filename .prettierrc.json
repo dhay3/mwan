@@ -1,0 +1,9 @@
+{
+  "singleQuote": true,
+  "plugins": [
+    "@prettier/plugin-xml",
+    "prettier-plugin-sh",
+    "prettier-plugin-sql",
+    "prettier-plugin-toml"
+  ]
+}

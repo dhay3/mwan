@@ -1,0 +1,356 @@
+---
+description: code quality principles
+alwaysApply: true
+---
+
+# Code Quality Principles
+
+This document defines fundamental principles for writing high-quality, maintainable code.
+
+---
+
+## Style Standards
+
+### Adherence to Style Guides
+
+**Principle**: Code style strictly adheres to the [Google Style Guide](https://google.github.io/styleguide).
+
+**Language-Specific Guides**:
+- **Python**: [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+- **JavaScript/TypeScript**: [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html)
+- **Java**: [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
+- **C++**: [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+- **Shell**: [Google Shell Style Guide](https://google.github.io/styleguide/shellguide.html)
+
+**Key Style Elements**:
+- Consistent naming conventions (camelCase, snake_case, PascalCase per language)
+- Proper indentation and spacing
+- Line length limits (typically 80-100 characters)
+- Import/include organization
+- File structure and organization
+
+**Enforcement**:
+- Use automated formatters (e.g., `black`, `prettier`, `clang-format`)
+- Configure linters (e.g., `pylint`, `eslint`, `cpplint`)
+- Run style checks in CI/CD pipelines
+
+---
+
+## Readability
+
+### Human-Centric Code
+
+**Principle**: Code should be concise and easily readable, primarily for humans to read.
+
+**Readability Guidelines**:
+
+1. **Clear Naming**
+   - Use descriptive, self-explanatory names
+   - Avoid abbreviations unless widely understood
+   - Names should reveal intent
+
+   ```python
+   # Good: Clear intent
+   user_authentication_token = generate_token(user_id)
+
+   # Avoid: Unclear abbreviations
+   uat = gen_tok(uid)
+   ```
+
+2. **Simplicity Over Cleverness**
+   - Prefer straightforward solutions
+   - Avoid overly complex one-liners
+   - Write code that junior developers can understand
+
+   ```python
+   # Good: Clear and simple
+   total = 0
+   for item in items:
+       if item.is_active:
+           total += item.price
+
+   # Avoid: Overly clever
+   total = sum(i.price for i in items if i.is_active)  # OK for simple cases
+   ```
+
+3. **Logical Structure**
+   - One responsibility per function/method
+   - Keep functions short (typically < 50 lines)
+   - Use early returns to reduce nesting
+   - Group related code together
+
+4. **Meaningful Comments**
+   - Explain "why", not "what"
+   - Document non-obvious decisions
+   - Remove outdated or redundant comments
+
+### Function/Method Documentation
+
+**Required Elements**:
+- `@description`: What the function does
+- `@parameter`: Each parameter with type and purpose
+- `@return`: Return value type and meaning
+- `@raises`/`@throws`: Exceptions that may be raised (if applicable)
+
+**Example**:
+```python
+def calculate_discount(price: float, discount_rate: float, max_discount: float = 100.0) -> float:
+    """
+    @description Calculates the final price after applying discount with a maximum cap. Applies a percentage discount to a price, ensuring the discount does not exceed the specified maximum amount.
+    
+    @parameter price The original price before discount (must be positive)
+    @parameter discount_rate The discount rate as a decimal (e.g., 0.15 for 15%)
+    @parameter max_discount Maximum discount amount allowed (default: 100.0)
+
+    @return The final price after applying the capped discount
+
+    @raises ValueError if price is negative or discount_rate is not between 0 and 1
+    """
+    if price < 0:
+        raise ValueError("Price cannot be negative")
+    if not 0 <= discount_rate <= 1:
+        raise ValueError("Discount rate must be between 0 and 1")
+
+    # Calculate discount amount, capped at maximum
+    discount_amount = min(price * discount_rate, max_discount)
+
+    # Apply discount to original price
+    final_price = price - discount_amount
+
+    return final_price
+```
+
+### Variable Documentation
+
+**When to Document Variables**:
+- Complex calculations or transformations
+- Non-obvious purpose or meaning
+- Important intermediate results
+- Configuration or constants
+
+**Example**:
+```python
+# Maximum number of retry attempts before giving up
+MAX_RETRIES = 3
+
+# Exponential backoff multiplier (doubles wait time each retry)
+BACKOFF_MULTIPLIER = 2
+
+# Calculate total wait time across all retries
+total_wait_time = sum(BACKOFF_MULTIPLIER ** i for i in range(MAX_RETRIES))
+```
+
+### Class Documentation
+
+```python
+class UserAuthenticationService:
+    """
+    @description Handles user authentication and session management.Provides methods for user login, logout, token generation, and session validation. Integrates with external OAuth providers.
+
+    @attribute session_timeout Session timeout in seconds (default: 3600)
+    @attribute token_expiry Token expiration time in seconds (default: 7200)
+    """
+    pass
+```
+
+---
+
+## Code Reusability
+
+### DRY Principle (Don't Repeat Yourself)
+
+**Principle**: If the same logic appears three times, consider abstracting it into a reusable component and decide based on the assessed benefits of abstraction.
+
+**Decision Framework**:
+
+1. **First Occurrence**: Write the code inline
+2. **Second Occurrence**: Note the duplication, but may keep inline if context differs
+3. **Third Occurrence**: Strong signal to abstract
+
+**Abstraction Considerations**:
+
+✅ **Abstract when**:
+- Logic is truly identical across uses
+- Changes would need to be synchronized
+- Abstraction improves clarity
+- Component has clear, single responsibility
+
+❌ **Don't abstract when**:
+- Similarities are coincidental
+- Contexts are fundamentally different
+- Abstraction adds unnecessary complexity
+- Would create tight coupling
+
+**Example**:
+```python
+# After third occurrence, abstract:
+def validate_and_format_email(email: str) -> str:
+    """
+    Validates and formats email address.
+
+    @parameter email Raw email address string
+    @return Formatted email address
+    @raises ValueError if email is invalid
+    """
+    if not email or '@' not in email:
+        raise ValueError("Invalid email format")
+    return email.lower().strip()
+
+# Use in multiple places
+user_email = validate_and_format_email(raw_email)
+admin_email = validate_and_format_email(admin_input)
+```
+
+---
+
+## Documentation
+
+### Comprehensive Code Documentation
+
+**Principle**: Variables and functions must be accompanied by detailed comments.
+
+**Documentation Standards**:
+
+
+
+---
+
+## Security
+
+### Security Best Practices
+
+**Principle**: Privacy content (passwords, tokens, etc.) should be encrypted or hashed; API keys should be stored in `.env` file and not committed to git; authentication or authorization should be integrated with human-machine verification if it is a web application.
+
+### Sensitive Data Handling
+
+1. **Passwords & Secrets**
+   - ✅ Always hash passwords (use bcrypt, argon2, or PBKDF2)
+   - ✅ Never store passwords in plain text
+   - ✅ Use secure random generators for tokens
+   - ❌ Never log sensitive data
+
+   ```python
+   import bcrypt
+
+   # Good: Hash password before storage
+   hashed_password = bcrypt.hashpw(
+       password.encode('utf-8'),
+       bcrypt.gensalt()
+   )
+
+   # Good: Verify password
+   is_valid = bcrypt.checkpw(
+       input_password.encode('utf-8'),
+       stored_hash
+   )
+   ```
+
+2. **API Keys & Credentials**
+   - ✅ Store in `.env` files (add to `.gitignore`)
+   - ✅ Use environment variables
+   - ✅ Rotate keys regularly
+   - ❌ Never hardcode in source code
+   - ❌ Never commit to version control
+
+   ```python
+   # .env file (NOT committed to git)
+   API_KEY=your_secret_key_here
+   DATABASE_URL=postgresql://user:pass@localhost/db
+
+   # In code: Load from environment
+   import os
+   from dotenv import load_dotenv
+
+   load_dotenv()
+   api_key = os.getenv('API_KEY')
+   ```
+
+3. **Encryption**
+   - ✅ Encrypt sensitive data at rest
+   - ✅ Use TLS/SSL for data in transit
+   - ✅ Use established libraries (don't roll your own crypto)
+
+   ```python
+   from cryptography.fernet import Fernet
+
+   # Generate key (store securely)
+   key = Fernet.generate_key()
+   cipher = Fernet(key)
+
+   # Encrypt sensitive data
+   encrypted_data = cipher.encrypt(sensitive_data.encode())
+
+   # Decrypt when needed
+   decrypted_data = cipher.decrypt(encrypted_data).decode()
+   ```
+
+### Authentication & Authorization
+
+**Web Application Requirements**:
+
+1. **Human-Machine Verification**
+   - Implement CAPTCHA for login/signup
+   - Rate limiting on authentication endpoints
+   - Monitor for suspicious activity
+
+2. **Secure Authentication**
+   - Multi-factor authentication (MFA) when possible
+   - Secure session management
+   - Proper logout functionality
+   - Token expiration and refresh
+
+3. **Authorization**
+   - Role-based access control (RBAC)
+   - Principle of least privilege
+   - Validate permissions on every request
+
+**Example**:
+```python
+from flask import Flask, request, session
+from flask_limiter import Limiter
+import secrets
+
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
+
+# Rate limiting to prevent brute force
+limiter = Limiter(app, default_limits=["100 per hour"])
+
+@app.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")  # Strict limit on login attempts
+def login():
+    """
+    Handles user login with rate limiting and CAPTCHA verification.
+
+    @description Authenticates user credentials, verifies CAPTCHA,
+                 and creates a secure session.
+    """
+    # Verify CAPTCHA
+    if not verify_captcha(request.form.get('captcha_response')):
+        return {"error": "CAPTCHA verification failed"}, 400
+
+    # Authenticate user
+    user = authenticate(
+        request.form.get('username'),
+        request.form.get('password')
+    )
+
+    if user:
+        # Generate secure session token
+        session['user_id'] = user.id
+        session['csrf_token'] = secrets.token_hex(32)
+        return {"success": True}, 200
+
+    return {"error": "Invalid credentials"}, 401
+```
+
+---
+
+## Summary
+
+These code quality principles ensure:
+- ✅ **Consistency**: Adherence to established style guides
+- ✅ **Readability**: Code that humans can easily understand
+- ✅ **Maintainability**: DRY principle and proper abstraction
+- ✅ **Clarity**: Comprehensive documentation
+- ✅ **Security**: Protection of sensitive data and secure authentication

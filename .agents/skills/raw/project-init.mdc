@@ -1,0 +1,116 @@
+---
+description: project initialisation instructions
+alwaysApply: false
+---
+
+# Workflows
+
+Stages are to be executed autonomously, and report the progress of each stage.
+
+**Interruption Strategy**
+
+Subject to interruption strictly under the following conditions:
+
+1. In the face of making critical decisions, or ambiguity and indeterminacy.
+2. In the face of questions that may need to be asked to the user.
+3. In the face of `.rules/*.md` should be updated.
+
+**Restore Strategy**
+
+1. Save the context of the interruption.
+2. Provide a detailed description of the issue and initiate an interruption.
+3. Resume the execution of the task from the interruption.
+
+## Stage 1: Align
+
+**Objective**: Turn the fuzzy requirements into precise, executable specifications.
+
+### Step 1. Analysis
+
+1. Analyse the language(s), tech stack(frameworks and pivotal components), dependencies from code(under `src/`) and documentations(under `docs/` or `README.md`).
+2. Analyse the databases' schemas, data flow and CI(`.github/workflows`).
+3. Analyse the conventions and constraints of the current project.
+4. Analyse the intentions of the current project, and guess the prospective action.
+5. Produce `docs/auto/align/analysis.md`, summarise the project with a comprehensive description and graphs.
+
+### Step 2. Request
+
+1. If `docs/auto/align/request.md` is absent, it is imperative to trigger an interruption to solicit a synopsis of requirements and create `docs/auto/align/request.md`; otherwise, use `docs/auto/align/request.md` as requirements.
+2. Based on `docs/auto/align/analysis.md` and `docs/auto/align/request.md`, formulate a structured inventory(`docs/auto/align/request_inventory.md`) of ambiguity and indeterminacy arranged according to precedence; trying to answer autonomously, predicated upon the extant project content and the investigation of analogous engineering endeavors and industry expertise, authorized to trigger an interruption when independent resolution prove unfeasible.
+3. Refine `docs/auto/align/request.md` into precise requirement specifications, based on `docs/auto/align/request_inventory.md`.
+
+### Step 3. Approve
+
+1. Ask for approval.
+2. If approved, skip to the next step; else, return to step 2.
+
+### Step 4. Checklist
+
+- [ ] All inquiries of `docs/auto/align/request_inventory.md` must be resolved.
+- [ ] Precise requirements in `docs/auto/align/request.md`.
+- [ ] Update comprehension based on `docs/auto/align/*`.
+
+## Stage 2. Design
+
+**Objective**: Based on `docs/auto/align/analysis.md`, `docs/auto/align/request.md` design the architecture.
+
+### Step 1. Architect
+
+1. Produce `docs/auto/design/architect.md`, a stratified architecture graph, includes pivotal components, module dependencies; a data flow graph; and an error handling and mitigation strategies graph. All graphs are rendered via Mermaid with a comprehensive description.
+
+### Step 2. Prove
+
+1. Prove how to implement `docs/auto/align/request.md`, and the design is viable in `docs/auto/design/prove.md`.
+
+### Step 3. Approve
+
+1. Ask for approval.
+2. If approved, skip to the next step; else, return to step 1.
+
+### Step 4. Checklist
+
+- [ ] The design covers all requirements, and the technical solution is truly feasible.
+- [ ] Each pivotal component can provide independent substantiation in `docs/auto/design/prove.md`.
+- [ ] All the guiding principles have criteria in `docs/auto/design/prove.md`.
+- [ ] Update comprehension based on `docs/auto/*`.
+
+## Stage 3. Implement
+
+**Objective**: Based on `docs/auto/design/architect.md`, `docs/auto/design/prove.md`, implement the project. The code should be generated in `src/`.
+
+### Step 1. Construct
+
+1. Configure the development environment and dependencies to comply with the requirements for this project.
+2. Implement the logic of the design in code, test first as possible, then implement it.
+
+### Step 2. Test
+
+1. Integrate test units covering normal cases, boundary cases and exceptional cases.
+2. Execute the test units; if an error occurs, fix it autonomously; if you fail to fix it, issue an interruption.
+
+### Step 3. Compile
+
+1. Compile the project by Makefile for different platforms(windows, linux, macos, generic is better).
+2. Test the compiled binary in a sandbox environment.
+
+### Step 4. Checklist
+
+- [ ] All requirements have been implemented.
+- [ ] All boundary cases and exceptional cases tests have been passed.
+- [ ] The pivotal components reverse extensibility.
+- [ ] The compiled binary can run on different platforms.
+- [ ] Update comprehension based on `src/`.
+
+## Stage 4. Post
+
+**Objective**: Accept the project.
+
+### Step 1. Report
+
+1. Produce `docs/auto/post/summary.md`, which contains the project summary report.
+2. Produce `docs/auto/post/todo.md`, which contains the project todo list.
+
+### Step 2. Checklist
+
+- [ ] The implementation is consistent with the design document.
+- [ ] All checklists have been ticked.

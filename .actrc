@@ -1,0 +1,3 @@
+--workflows=.github/workflows
+--platform=ubuntu-22.04=ubuntu-act:gh
+--action-offline-mode

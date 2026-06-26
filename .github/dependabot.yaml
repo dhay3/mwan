@@ -1,0 +1,47 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      semver-major-days: 15
+      semver-minor-days: 7
+      semver-patch-days: 3
+    commit-message:
+      prefix: "🤖(chore)"
+      prefix-development: "⬆️(chore)"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      semver-major-days: 15
+      semver-minor-days: 7
+      semver-patch-days: 3
+    commit-message:
+      prefix: "🤖(chore)"
+      prefix-development: "⬆️(chore)"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+      - ".github/*"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "catthehacker/ubuntu"
+        versions:
+          - "22.04"
+          - "20.04"
+          - "18.04"
+    commit-message:
+      prefix: "🤖(chore)"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "🤖(chore)"

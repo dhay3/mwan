@@ -1,0 +1,11 @@
+**/.idea/
+**/.conda/
+**/.venv/
+**/.ruff_cache/
+**/__pycache__/
+**/node_modules/
+
+**/logs/
+**/debug/
+**/target/
+**/bundle/

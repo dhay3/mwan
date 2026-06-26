@@ -1,0 +1,35 @@
+name: Init CODEOWNERS
+on:
+  workflow_dispatch:
+    inputs:
+      repository-owners:
+        description: "Repository owners"
+        required: false
+        type: string
+jobs:
+  code-owners:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Create CODEOWNERS 
+        run: |
+          if [[ -z "${{ inputs.repository-owners }}" ]]; then
+            echo "*       @${{ github.repository_owner }}" > CODEOWNERS
+          else
+            for owner in ${{ inputs.repository-owners }}; do
+              echo > CODEOWNERS
+              echo "*       @${owner}" >> CODEOWNERS
+            done
+          fi
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git pull
+          git add CODEOWNERS
+          git commit -m "🤖 add CODEOWNERS"
+          git push

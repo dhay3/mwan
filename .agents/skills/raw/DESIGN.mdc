@@ -1,0 +1,10 @@
+---
+description: design principles
+alwaysApply: true
+---
+
+- Components characterised by disparate functionalities should be divided into different layers, eg [v2ray-core](https://github.com/v2fly/v2ray-core).
+- Components should be decoupled as much as possible, but that doesn't mean no coupling at all.
+- Use components of the current project first, then extant open-source libraries or tools.
+- Error handling or mitigation in a unified approach.
+- Pivotal components reserve sufficient latitude for future extensibility.

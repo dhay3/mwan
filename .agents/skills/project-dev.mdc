@@ -1,0 +1,40 @@
+---
+description: project development instructions
+alwaysApply: false
+---
+
+# Project Development Workflows
+
+This document defines the autonomous workflow for developing and revising a project. Execute stages sequentially, reporting progress at each step.
+
+
+use ruff to lint and format code
+
+## Package Management
+
+- Use `conda` as the environment manager.
+- Use `uv` as the python package manager.
+- Use `npm` as the node package manager.
+
+## CI/CD
+
+- Use github actions as the CI/CD tool.
+
+## 🚨 Quality Checks
+
+**MANDATORY**: After completing code changes, run `mcp__vscode-mcp__get_diagnostics` on the modified files to identify any errors introduced by your changes and fix them.
+
+CI CD
+
+# workflows
+
+### Stage 4. Revision
+
+**Objective**: Based on `docs/auto/Align/ANALYSIS.md`, `docs/auto/Align/REQUEST.md` design the architecture.
+
+### Step 1. Revision
+
+1. If `docs/auto/revision/REVISE.md` is absent, skip to the next stage.
+2. Review and refine the `docs/auto/Revision/REVISE.md`.
+3. Update the current project according to `docs/auto/Revision/REVISE.md`.
+4. Ask for approval.

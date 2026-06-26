@@ -1,0 +1,222 @@
+---
+description: design & architecture principles
+alwaysApply: true
+---
+
+# Design & Architecture Principles
+
+This document defines fundamental principles for software design and system architecture.
+
+---
+
+## Separation of Concerns
+
+### Layered Architecture
+
+**Principle**: Components with disparate functionalities should be divided into different layers.
+
+**Reference Example**: [v2ray-core](https://github.com/v2fly/v2ray-core) demonstrates excellent layered architecture.
+
+**Guidelines**:
+- **Presentation Layer**: UI, API endpoints, user interaction
+- **Business Logic Layer**: Core application logic, domain rules
+- **Data Access Layer**: Database operations, external service integration
+- **Infrastructure Layer**: Cross-cutting concerns (logging, caching, configuration)
+
+**Benefits**:
+- Clear responsibility boundaries
+- Easier testing and maintenance
+- Independent evolution of layers
+- Better code organization and discoverability
+
+**Example Structure**:
+```
+src/
+├── presentation/    # API routes, controllers, views
+├── business/        # Core domain logic, services
+├── data/           # Repositories, data models
+└── infrastructure/ # Utilities, logging, config
+```
+
+---
+
+## Component Design
+
+### Decoupling Strategy
+
+**Principle**: Components should be decoupled as much as possible, but that doesn't mean no coupling at all.
+
+**Balanced Approach**:
+- **Prefer**: Loose coupling through interfaces and abstractions
+- **Accept**: Necessary coupling for cohesive functionality
+- **Avoid**: Tight coupling that creates rigid dependencies
+
+**Decoupling Techniques**:
+1. **Dependency Injection**: Pass dependencies rather than creating them internally
+2. **Interface-Based Design**: Depend on abstractions, not concrete implementations
+3. **Event-Driven Architecture**: Use events for asynchronous communication
+4. **Service Locator Pattern**: Centralize dependency resolution when appropriate
+
+**Example**:
+```python
+# Good: Loose coupling via interface
+class DataProcessor:
+    def __init__(self, storage: StorageInterface):
+        self.storage = storage  # Depends on interface, not implementation
+
+# Avoid: Tight coupling
+class DataProcessor:
+    def __init__(self):
+        self.storage = MySQLDatabase()  # Hardcoded dependency
+```
+
+---
+
+## Dependency Management
+
+### Component Prioritization
+
+**Principle**: Use components of the current project first, then existing open-source libraries or tools.
+
+**Decision Hierarchy**:
+1. **First**: Existing project components
+   - Maintains consistency
+   - Reduces external dependencies
+   - Leverages proven internal solutions
+
+2. **Second**: Well-established open-source libraries
+   - Active maintenance and community
+   - Proven reliability and security
+   - Good documentation and support
+
+3. **Last**: Custom implementation
+   - Only when existing solutions don't fit
+   - Document rationale for custom approach
+   - Consider long-term maintenance cost
+
+**Evaluation Criteria**:
+- ✅ Does an internal component already solve this?
+- ✅ Is the external library actively maintained?
+- ✅ Does it have good security track record?
+- ✅ Is the license compatible?
+- ✅ Will it introduce dependency conflicts?
+
+---
+
+## Error Handling
+
+### Unified Error Management
+
+**Principle**: Handle errors and implement mitigation strategies in a unified approach.
+
+**Unified Strategy Components**:
+
+1. **Consistent Error Types**
+   - Define standard error hierarchy
+   - Use custom exceptions for domain-specific errors
+   - Include context and actionable information
+
+2. **Centralized Error Handling**
+   - Global error handlers for common scenarios
+   - Logging and monitoring integration
+   - User-friendly error messages
+
+3. **Error Recovery Patterns**
+   - Retry mechanisms with exponential backoff
+   - Circuit breakers for external services
+   - Graceful degradation when possible
+   - Fallback strategies
+
+4. **Error Propagation**
+   - Clear error boundaries
+   - Transform errors at layer boundaries
+   - Preserve error context through the stack
+
+**Example**:
+```python
+# Unified error handling approach
+class ApplicationError(Exception):
+    """Base error for all application errors"""
+    def __init__(self, message: str, context: dict = None):
+        self.message = message
+        self.context = context or {}
+        super().__init__(self.message)
+
+class ValidationError(ApplicationError):
+    """Validation-specific error"""
+    pass
+
+# Centralized error handler
+def handle_error(error: ApplicationError):
+    logger.error(f"{error.message}", extra=error.context)
+    # Unified logging, monitoring, alerting
+```
+
+---
+
+## Extensibility
+
+### Future-Proof Design
+
+**Principle**: Pivotal components reserve sufficient latitude for future extensibility.
+
+**Extensibility Strategies**:
+
+1. **Plugin Architecture**
+   - Define clear extension points
+   - Use dependency injection for plugins
+   - Document plugin interfaces
+
+2. **Configuration-Driven Behavior**
+   - Externalize behavior through configuration
+   - Support feature flags
+   - Enable runtime customization
+
+3. **Open-Closed Principle**
+   - Open for extension, closed for modification
+   - Use inheritance and composition appropriately
+   - Design for polymorphism
+
+4. **Versioning Strategy**
+   - API versioning for backward compatibility
+   - Deprecation policies and migration paths
+   - Semantic versioning for libraries
+
+**Identify Pivotal Components**:
+- Core business logic engines
+- Data processing pipelines
+- Integration interfaces
+- Authentication/authorization systems
+- Configuration management
+
+**Example**:
+```python
+# Extensible design with plugin support
+class DataProcessorPlugin(ABC):
+    @abstractmethod
+    def process(self, data: Any) -> Any:
+        pass
+
+class DataPipeline:
+    def __init__(self):
+        self.plugins: List[DataProcessorPlugin] = []
+
+    def register_plugin(self, plugin: DataProcessorPlugin):
+        self.plugins.append(plugin)  # Extensible via plugins
+
+    def execute(self, data: Any) -> Any:
+        for plugin in self.plugins:
+            data = plugin.process(data)
+        return data
+```
+
+---
+
+## Summary
+
+These design principles ensure:
+- ✅ **Maintainability**: Clear structure and separation of concerns
+- ✅ **Flexibility**: Decoupled components that evolve independently
+- ✅ **Reliability**: Consistent error handling and recovery
+- ✅ **Sustainability**: Thoughtful dependency management
+- ✅ **Scalability**: Extensible architecture for future growth
