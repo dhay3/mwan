@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Annotated, Literal
 
 from pydantic import (
@@ -8,11 +7,6 @@ from pydantic import (
     StrictInt,
     Field,
 )
-
-
-class Proto(int, Enum):
-    TCP = 0
-    ICMP = 1
 
 
 class BaseConfig(BaseModel):

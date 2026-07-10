@@ -8,10 +8,10 @@ import argparse
 import signal
 from pathlib import Path
 
-from config.Config import load_config
+from config import load_config
 
 # import logger  # noqa: F401
-from monitor.monitor import MwanMonitor
+from monitor.Monitor import MwanMonitor
 
 
 # logger = logging.getLogger('main')

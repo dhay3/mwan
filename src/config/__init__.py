@@ -3,7 +3,7 @@ import logging
 
 
 from pathlib import Path
-from Config import MwanConfig, Proto
+from .Config import MwanConfig
 
 
 logger = logging.getLogger("Config")
@@ -18,6 +18,5 @@ def load_config(path: Path) -> MwanConfig:
 
 __all__ = [
     MwanConfig,
-    Proto,
     load_config,
 ]
