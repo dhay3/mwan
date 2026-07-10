@@ -29,7 +29,7 @@ class BackupConfig(BaseConfig):
 
 
 class ProbeConfig(BaseConfig):
-    hosts: list[Annotated[StrictStr, Field(min_length=1)]] = Field(
+    address: list[Annotated[StrictStr, Field(min_length=1)]] = Field(
         description="Addresses for ping",
         default=["example.org:80", "223.5.5.5"],
         validate_default=True,

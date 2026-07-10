@@ -5,7 +5,7 @@ dev = "ens19"
 dev = "ens18"
 
 [Probe]
-hosts = ["example.org:80", "dns.aliyun.com:53", "119.29.29.29"]
+address = ["example.org:80", "dns.aliyun.com:53", "119.29.29.29"]
 
 count = 1
 

@@ -4,17 +4,16 @@ from __future__ import annotations
 
 import argparse
 
-# import logging
 import signal
 from pathlib import Path
 
 from config import load_config
 
-# import logger  # noqa: F401
-from monitor.Monitor import MwanMonitor
+import logging
+from monitor.Monitor import Monitor
 
 
-# logger = logging.getLogger('main')
+logger = logging.getLogger("main")
 
 
 def define_options():
@@ -22,7 +21,7 @@ def define_options():
         prog="mwan",
         usage="%(prog)s [options]",
         epilog="released under MIT license",
-        description="Cisco IP SLA implementation for Linux.",
+        description="IP SLA implementation for Linux.",
     )
     parser.add_argument(
         "--config",
@@ -37,8 +36,7 @@ def main() -> int:
     args = define_options()
 
     try:
-        config = load_config(args.config)
-        monitor = MwanMonitor(config)
+        monitor = Monitor(load_config(args.config))
         signal.signal(signal.SIGINT, monitor.stop)
         signal.signal(signal.SIGTERM, monitor.stop)
         monitor.run()

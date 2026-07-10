@@ -1,67 +1,46 @@
-from functools import cache
-from typing import NamedTuple
-
 from config.Config import MwanConfig
+from scapy.all import (
+    sr1,
+    send,
+    IP,
+    TCP,
+)
 
 
-class ScapyTCPModules(NamedTuple):
-    IP: type
-    TCP: type
-    send: object
-    sr1: object
-
-
-@cache
-def load_scapy() -> ScapyTCPModules:
-    try:
-        from scapy.layers.inet import IP, TCP
-        from scapy.sendrecv import send, sr1
-    except ModuleNotFoundError as exc:
-        raise RuntimeError(
-            "scapy is required for TCP probe packets; install scapy>=2.6,<3.0"
-        ) from exc
-    return ScapyTCPModules(IP, TCP, send, sr1)
-
-
-def parse_host_port(value: str) -> tuple[str, int]:
-    host, separator, port_value = value.rpartition(":")
-    if not separator or not host or not port_value:
-        raise ValueError(f"tcp host must include port: {value}")
+def parse_addr(addr: str):
+    host, port = addr.split(":")
 
     try:
-        port = int(port_value)
-    except ValueError as exc:
-        raise ValueError(f"invalid port in host: {value}") from exc
+        port = int(port)
+    except ValueError:
+        raise ValueError(f"invalid port: {addr}")
 
     if port < 1 or port > 65535:
-        raise ValueError(f"port out of range in host: {value}")
+        raise ValueError(f"invalid port: {addr}")
 
     return host, port
 
 
-def ping(config: MwanConfig, addr: str) -> bool:
-    host, port = parse_host_port(addr)
-    scapy = load_scapy()
+def ping(config: MwanConfig, addr: str):
+    host, port = parse_addr(addr)
 
     for _ in range(config.probe.count):
-        packet = scapy.IP(dst=host) / scapy.TCP(dport=port, flags="S")
-        response = scapy.sr1(
+        packet = IP(dst=host) / TCP(dport=port, flags="S")
+        ans = sr1(
             packet,
             iface=config.primary.dev,
             timeout=config.probe.timeout,
             verbose=False,
         )
-        if not response or not response.haslayer(scapy.TCP):
-            continue
-
-        tcp = response.getlayer(scapy.TCP)
-        if tcp.flags & 0x12 == 0x12:
-            reset = scapy.IP(dst=host) / scapy.TCP(
-                dport=port,
-                sport=tcp.dport,
-                flags="R",
-                seq=tcp.ack,
-            )
-            scapy.send(reset, iface=config.primary.dev, verbose=False)
-            return True
-    return False
+        if ans and ans.haslayer(TCP):
+            l3 = ans.getlayer(TCP)
+            if l3.flags & 0x12 == 0x12:
+                packet = IP(dst=host) / TCP(
+                    dport=port,
+                    sport=l3.dport,
+                    flags="R",
+                    seq=l3.ack,
+                )
+                send(packet, iface=config.primary.dev, verbose=False)
+                return True
+        return False
