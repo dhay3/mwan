@@ -6,6 +6,7 @@ from .Route import (
     replace_route,
 )
 from config import MwanConfig
+from config.State import STATE
 
 logger = logging.getLogger("Route")
 
@@ -48,16 +49,16 @@ def replace_default_route(route: Route, metric: str):
     replace_route(args)
 
 
-def apply_default_route(config: MwanConfig, state: str):
+def apply_default_route(config: MwanConfig, state: STATE):
     primary_deft = get_default_route(config.primary.dev)
     backup_deft = get_default_route(config.backup.dev)
-    if state == "Backup":
+    if state == STATE.Backup:
         metric = backup_deft.metric + config.primary.step
-    elif state == "Primary":
+    elif state == STATE.Primary:
         metric = max(backup_deft.metric - config.primary.step, 0)
 
     replace_default_route(primary_deft, metric)
-    logger.warning(f"{config.primary.dev} switched to {state}")
+    logger.warning(f"{config.primary.dev} switched to {state.name}")
 
 
 __all__ = [apply_default_route]

@@ -16,7 +16,7 @@ class Monitor:
         self.quit = Event()
         self.down_cnt = 0
         self.up_cnt = 0
-        self.state: STATE
+        self.state: STATE = STATE.Primary
 
     def stop(self, signum: int):
         logger.info(f"mwan stopping {signum}")
@@ -24,7 +24,7 @@ class Monitor:
 
     def run(self):
         logger.info(
-            f"mwan started: primary={self.config.primary.dev} backup={self.config.backup.dev} hosts={','.join(self.config.probe.address)}"
+            f"mwan started: primary={self.config.primary.dev} backup={self.config.backup.dev}"
         )
 
         while not self.quit.is_set():
@@ -47,9 +47,9 @@ class Monitor:
                 self.down_cnt,
                 self.config.probe.down,
             )
-            if oughta_down and self.state != "Backup":
-                apply_default_route(self.config, "Backup")
-                self.state = "Backup"
+            if oughta_down and self.state != STATE.Backup:
+                apply_default_route(self.config, STATE.Backup)
+                self.state = STATE.Backup
             return
         else:
             self.up_cnt += 1
@@ -60,6 +60,6 @@ class Monitor:
                 self.up_cnt,
                 self.config.probe.up,
             )
-            if oughta_up and self.state != "Primary":
-                apply_default_route(self.config, "Primary")
-                self.state = "Primary"
+            if oughta_up and self.state != STATE.Primary:
+                apply_default_route(self.config, STATE.Primary)
+                self.state = STATE.Primary
