@@ -1,10 +1,26 @@
-.PHONY: init clean
+.PHONY: init package clean compile install sha1sum
 
-init:
-	bash scripts/codespace.sh
+APP_NAME ?= mwan
+PYTHON ?= .conda/bin/python
+PYINSTALLER ?= $(PYTHON) -m PyInstaller
+ENTRYPOINT ?= src/__main__.py
+DIST_DIR ?= dist
+BUILD_DIR ?= build
+
+package:
+	$(PYINSTALLER) \
+		--clean \
+		--noconfirm \
+		--onefile \
+		--name $(APP_NAME) \
+		--paths src \
+		--distpath $(DIST_DIR) \
+		--workpath $(BUILD_DIR)/pyinstaller \
+		--specpath $(BUILD_DIR) \
+		$(ENTRYPOINT)
 
 clean:
-	true
+	rm -rf $(BUILD_DIR) $(DIST_DIR)
 
 compile:
 	true

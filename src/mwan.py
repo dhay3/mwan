@@ -10,7 +10,6 @@ from pathlib import Path
 from config import load_config
 
 import logging
-from monitor.Monitor import Monitor
 
 
 logger = logging.getLogger("main")
@@ -36,14 +35,13 @@ def main() -> int:
     args = define_options()
 
     try:
+        from monitor.Monitor import Monitor
+
         monitor = Monitor(load_config(args.config))
         signal.signal(signal.SIGINT, monitor.stop)
         signal.signal(signal.SIGTERM, monitor.stop)
         monitor.run()
     except Exception:
-        # logger.exception('mwan stopped with an error')
+        logger.exception("mwan stopped with an error")
         return 1
     return 0
-
-
-main()

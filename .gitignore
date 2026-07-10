@@ -9,3 +9,5 @@
 **/debug/
 **/target/
 **/bundle/
+**/build/
+**/dist/
