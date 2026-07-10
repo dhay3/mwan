@@ -1,0 +1,22 @@
+[Primary]
+dev = "ens19"
+
+[Backup]
+dev = "ens18"
+
+[Probe]
+hosts = ["example.org:80", "dns.aliyun.com:53", "119.29.29.29"]
+
+count = 1
+
+timeout = 1
+
+delay = 3
+
+down = 3
+
+fast_down = 0
+
+up = 5
+
+fast_up = 0

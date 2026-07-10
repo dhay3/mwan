@@ -36,5 +36,7 @@
   },
   "terminal.integrated.fontLigatures.enabled": true,
   "terminal.integrated.gpuAcceleration": "on",
-  "terminal.integrated.copyOnSelection": true
+  "terminal.integrated.copyOnSelection": true,
+  "python-envs.defaultEnvManager": "ms-python.python:conda",
+  "python-envs.defaultPackageManager": "ms-python.python:conda"
 }
