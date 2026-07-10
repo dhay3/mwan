@@ -25,22 +25,24 @@ def ping(config: MwanConfig, addr: str):
     host, port = parse_addr(addr)
 
     for _ in range(config.probe.count):
-        packet = IP(dst=host) / TCP(dport=port, flags="S")
+        packet = IP(dst=f"{host}%{config.primary.dev}") / TCP(dport=port, flags="S")
         ans = sr1(
             packet,
-            iface=config.primary.dev,
             timeout=config.probe.timeout,
             verbose=False,
         )
         if ans and ans.haslayer(TCP):
             l3 = ans.getlayer(TCP)
             if l3.flags & 0x12 == 0x12:
-                packet = IP(dst=host) / TCP(
+                packet = IP(dst=f"{host}%{config.primary.dev}") / TCP(
                     dport=port,
                     sport=l3.dport,
                     flags="R",
                     seq=l3.ack,
                 )
-                send(packet, iface=config.primary.dev, verbose=False)
+                send(
+                    packet,
+                    verbose=False,
+                )
                 return True
-        return False
+    return False

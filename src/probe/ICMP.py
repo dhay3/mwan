@@ -8,10 +8,9 @@ from scapy.all import (
 
 def ping(config: MwanConfig, addr: str):
     for _ in range(config.probe.count):
-        packet = IP(dst=addr) / ICMP(seq=_)
+        packet = IP(dst=f"{addr}%{config.primary.dev}") / ICMP(seq=_)
         ans = sr1(
             packet,
-            iface=config.primary.dev,
             timeout=config.probe.timeout,
             verbose=False,
         )

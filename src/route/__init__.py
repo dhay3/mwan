@@ -16,7 +16,7 @@ def get_default_route(dev: str) -> Route:
     if not defaults:
         raise RuntimeError(f"no default route for dev: {dev}")
 
-    default = min(defaults, key=lambda item: int(item.get("metric", "0")))
+    default = min(defaults, key=lambda item: int(item.get("metric", 0)))
     return Route(
         dev=dev,
         gateway=default.get("gateway"),
@@ -26,8 +26,8 @@ def get_default_route(dev: str) -> Route:
     )
 
 
-def replace_default_route(route: Route, metric: str):
-    if int(metric) < 0:
+def replace_default_route(route: Route, metric: int):
+    if metric < 0:
         raise RuntimeError(f"negative metric: {metric}, route: {route}")
     if route.metric == metric:
         logger.info(f"same metric: {metric}, route={route}")

@@ -7,4 +7,7 @@ import mwan
 
 
 if __name__ == "__main__":
-    sys.exit(mwan.main())
+    try:
+        sys.exit(mwan.main())
+    except KeyboardInterrupt:
+        sys.exit(0)

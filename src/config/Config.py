@@ -31,7 +31,7 @@ class BackupConfig(BaseConfig):
 class ProbeConfig(BaseConfig):
     address: list[Annotated[StrictStr, Field(min_length=1)]] = Field(
         description="Addresses for ping",
-        default=["example.org:80", "223.5.5.5"],
+        default=["dns.aliyun.com:80", "119.29.29.29"],
         validate_default=True,
     )
 

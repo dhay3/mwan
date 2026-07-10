@@ -1,4 +1,4 @@
-.PHONY: init package clean compile install sha1sum
+.PHONY: init package package-dir clean compile install sha1sum
 
 APP_NAME ?= mwan
 PYTHON ?= .conda/bin/python
@@ -6,6 +6,7 @@ PYINSTALLER ?= $(PYTHON) -m PyInstaller
 ENTRYPOINT ?= src/__main__.py
 DIST_DIR ?= dist
 BUILD_DIR ?= build
+DIST_DIR ?= $(DIST_DIR)
 
 package:
 	$(PYINSTALLER) \
@@ -18,6 +19,8 @@ package:
 		--workpath $(BUILD_DIR)/pyinstaller \
 		--specpath $(BUILD_DIR) \
 		$(ENTRYPOINT)
+
+
 
 clean:
 	rm -rf $(BUILD_DIR) $(DIST_DIR)

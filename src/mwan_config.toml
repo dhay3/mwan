@@ -5,7 +5,7 @@ dev = "ens19"
 dev = "ens18"
 
 [Probe]
-address = ["example.org:80", "dns.aliyun.com:53", "119.29.29.29"]
+address = ["dns.aliyun.com:80", "119.29.29.29"]
 
 count = 1
 

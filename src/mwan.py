@@ -7,8 +7,6 @@ import argparse
 import signal
 from pathlib import Path
 
-from config import load_config
-
 import logging
 
 
@@ -35,6 +33,7 @@ def main() -> int:
     args = define_options()
 
     try:
+        from config import load_config
         from monitor.Monitor import Monitor
 
         monitor = Monitor(load_config(args.config))

@@ -2,15 +2,14 @@ import json
 from utils import cmd
 
 from pydantic import BaseModel
-from pydantic.networks import IPvAnyAddress
 
 
 class Route(BaseModel):
     dev: str | None
-    gateway: IPvAnyAddress | None
+    gateway: str | None
     protocol: str | None
-    metric: str | None
-    prefsrc: IPvAnyAddress | None
+    metric: int | None
+    prefsrc: str | None
 
 
 def show_route(args: list[str]):
