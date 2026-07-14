@@ -1,8 +1,8 @@
+import socket
+
 from config.Config import MwanConfig
-from .Address import resolve_ipv4
 from scapy.all import (
     IP,
-    ScopedIP,
     TCP,
     send,
     sr1,
@@ -25,7 +25,7 @@ def parse_addr(addr: str):
 
 def ping(config: MwanConfig, addr: str):
     host, port = parse_addr(addr)
-    scoped_host = ScopedIP(resolve_ipv4(host), scope=config.primary.dev)
+    scoped_host = f"{socket.gethostbyname(host)}%{config.primary.dev}"
 
     for _ in range(config.probe.count):
         packet = IP(dst=scoped_host) / TCP(dport=port, flags="S")
