@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
+import os
 
 import signal
 from pathlib import Path
 
-import logging
+import logger as LOG  # noqa: F401
 
-
-logger = logging.getLogger("main")
+logger = logging.getLogger("Main")
 
 
 def build_parse():
@@ -29,25 +30,22 @@ def build_parse():
 
 
 def main() -> int:
-    args = build_parse().parse_args()
+    args = build_parse().parse_args(["-c", "mwan_config.toml"])
 
     try:
-        # from config import load_config
         from monitor.Monitor import Monitor
 
         monitor = Monitor(args.config)
 
         def interrupt(signum: int, frame=None):
             monitor.stop(signum, frame)
-            raise KeyboardInterrupt
+            logging.shutdown()
+            os._exit(0)
 
         signal.signal(signal.SIGINT, interrupt)
         signal.signal(signal.SIGTERM, monitor.stop)
         monitor.run()
-    except KeyboardInterrupt:
-        logger.info("mwan stopped by keyboard interrupt")
-        return 0
     except Exception:
-        logger.exception("mwan stopped with an error")
+        logger.exception("stopped with an error")
         return 1
     return 0

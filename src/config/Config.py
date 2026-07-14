@@ -66,6 +66,10 @@ class ProbeConfig(BaseConfig):
 
 
 class MwanConfig(BaseConfig):
+    debug: Literal[0, 1] = Field(
+        description="Enable debug log",
+        default=0,
+    )
     primary: PrimaryConfig = Field(alias="Primary")
     backup: BackupConfig = Field(alias="Backup")
     probe: ProbeConfig = Field(alias="Probe")

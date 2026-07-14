@@ -76,7 +76,7 @@ def switch_defualt_route(config: MwanConfig, state: STATE):
         primary_deft.metric = max(backup_metric - config.primary.step, 0)
 
     if add_default_route(primary_deft) and del_default_route(primary_deft_copy):
-        logger.warning(f"switched to state: {state.name}")
+        logger.warning(f"switched to: {state.name}")
 
 
 __all__ = [switch_defualt_route]

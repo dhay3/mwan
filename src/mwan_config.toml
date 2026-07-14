@@ -1,3 +1,5 @@
+debug = 0
+
 [Primary]
 dev = "ens19"
 
@@ -6,6 +8,8 @@ dev = "ens18"
 
 [Probe]
 address = ["dns.aliyun.com:80", "119.29.29.29"]
+#address = ["223.5.5.5:80", "119.29.29.29"]
+#address = ["192.100.100.100","192.100.100.101"]
 
 count = 1
 

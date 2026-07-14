@@ -21,9 +21,9 @@ def probe(config: MwanConfig, enable_log: bool = True) -> bool:
         try:
             puls = ping(config, addr)
         except Exception as exc:
-            raise RuntimeError(f"probe:{uid}") from exc
+            raise RuntimeError(f"trans:{uid} addr:{addr} failed") from exc
         if enable_log and not puls:
-            logger.warning(f"probe:{uid} addr:{addr} timeouted")
+            logger.debug(f"trans:{uid} addr:{addr} timeouted")
         pulses.append(puls)
 
     down = not any(pulses)

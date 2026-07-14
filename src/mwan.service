@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /usr/local/lib/mwan/mwan.py --config /etc/mwan.toml
+ExecStart=/usr/bin/python3 /usr/local/lib/mwan/mwan.py --config /opt/mwan/mwan.toml
 Restart=always
 RestartSec=2
 StandardOutput=journal
