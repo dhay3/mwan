@@ -1,9 +1,11 @@
 from config.Config import MwanConfig
+from .Address import resolve_ipv4
 from scapy.all import (
-    sr1,
-    send,
     IP,
+    ScopedIP,
     TCP,
+    send,
+    sr1,
 )
 
 
@@ -23,9 +25,10 @@ def parse_addr(addr: str):
 
 def ping(config: MwanConfig, addr: str):
     host, port = parse_addr(addr)
+    scoped_host = ScopedIP(resolve_ipv4(host), scope=config.primary.dev)
 
     for _ in range(config.probe.count):
-        packet = IP(dst=f"{host}%{config.primary.dev}") / TCP(dport=port, flags="S")
+        packet = IP(dst=scoped_host) / TCP(dport=port, flags="S")
         ans = sr1(
             packet,
             timeout=config.probe.timeout,
@@ -34,7 +37,7 @@ def ping(config: MwanConfig, addr: str):
         if ans and ans.haslayer(TCP):
             l3 = ans.getlayer(TCP)
             if l3.flags & 0x12 == 0x12:
-                packet = IP(dst=f"{host}%{config.primary.dev}") / TCP(
+                packet = IP(dst=scoped_host) / TCP(
                     dport=port,
                     sport=l3.dport,
                     flags="R",

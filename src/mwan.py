@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 import argparse
 
 import signal
@@ -13,7 +11,7 @@ import logging
 logger = logging.getLogger("main")
 
 
-def define_options():
+def build_parse():
     parser = argparse.ArgumentParser(
         prog="mwan",
         usage="%(prog)s [options]",
@@ -21,25 +19,34 @@ def define_options():
         description="IP SLA implementation for Linux.",
     )
     parser.add_argument(
+        "-c",
         "--config",
         type=Path,
         default="/opt/mwan/mwan_config.toml",
         help="path to config file (default: %(default)s)",
     )
-    return parser.parse_args()
+    return parser
 
 
 def main() -> int:
-    args = define_options()
+    args = build_parse().parse_args()
 
     try:
         from config import load_config
         from monitor.Monitor import Monitor
 
-        monitor = Monitor(load_config(args.config))
-        signal.signal(signal.SIGINT, monitor.stop)
+        monitor = Monitor(load_config(args.config), args.config)
+
+        def interrupt(signum: int, frame=None):
+            monitor.stop(signum, frame)
+            raise KeyboardInterrupt
+
+        signal.signal(signal.SIGINT, interrupt)
         signal.signal(signal.SIGTERM, monitor.stop)
         monitor.run()
+    except KeyboardInterrupt:
+        logger.info("mwan stopped by keyboard interrupt")
+        return 0
     except Exception:
         logger.exception("mwan stopped with an error")
         return 1

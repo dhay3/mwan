@@ -1,12 +1,16 @@
 from config import MwanConfig
+
+# from .Address import resolve_ipv4
 from scapy.all import (
-    sr1,
     ICMP,
     IP,
+    # ScopedIP,
+    sr1,
 )
 
 
 def ping(config: MwanConfig, addr: str):
+    # scoped_addr = ScopedIP(resolve_ipv4(addr), scope=config.primary.dev)
     for _ in range(config.probe.count):
         packet = IP(dst=f"{addr}%{config.primary.dev}") / ICMP(seq=_)
         ans = sr1(
