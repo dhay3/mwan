@@ -1,6 +1,7 @@
 import json
 from utils import cmd
 
+from typing import Any
 from pydantic import BaseModel
 
 
@@ -12,7 +13,7 @@ class Route(BaseModel):
     prefsrc: str | None
 
 
-def show_route(args: list[str]):
+def show_route(args: list[Any]):
     command = ["ip", "-j", "-4", "route", "show", *args]
     result = cmd(command)
     if result.returncode != 0:
@@ -24,23 +25,29 @@ def show_route(args: list[str]):
     return routes
 
 
-def add_route(args: list[str]):
-    pass
+def add_route(args: list[Any]):
+    command = ["ip", "-4", "route", "add", *args]
+    result = cmd(command)
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or f"failed to add route: {command}")
+    return True
 
 
-def delete_route(args: list[str]):
+def delete_route(args: list[Any]):
     command = ["ip", "-4", "route", "delete", *args]
     result = cmd(command)
     if result.returncode != 0:
         raise RuntimeError(
             result.stderr.strip() or f"failed to delete route: {command}"
         )
+    return True
 
 
-def replace_route(args: list[str]):
+def replace_route(args: list[Any]):
     command = ["ip", "-4", "route", "replace", *args]
     result = cmd(command)
     if result.returncode != 0:
         raise RuntimeError(
             result.stderr.strip() or f"failed to replace route: {command}"
         )
+    return True

@@ -16,7 +16,7 @@ def ping(config: MwanConfig, addr: str) -> bool:
 
 def probe(config: MwanConfig) -> bool:
     pulses = []
-    uid = uuid.uuid4()
+    uid = uuid.uuid4().hex[:8]
     for addr in config.probe.address:
         try:
             puls = ping(config, addr)

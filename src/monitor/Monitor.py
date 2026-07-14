@@ -4,7 +4,7 @@ from threading import Event
 from config import MwanConfig
 from config.State import STATE
 from probe import probe
-from route import apply_default_route
+from route import switch_defualt_route
 
 
 logger = logging.getLogger("Monitor")
@@ -18,7 +18,7 @@ class Monitor:
         self.up_cnt = 0
         self.state: STATE = STATE.Primary
 
-    def stop(self, signum: int):
+    def stop(self, signum: int, frame=None):
         logger.info(f"mwan stopping {signum}")
         self.quit.set()
 
@@ -48,7 +48,7 @@ class Monitor:
                 self.config.probe.down,
             )
             if oughta_down and self.state != STATE.Backup:
-                apply_default_route(self.config, STATE.Backup)
+                switch_defualt_route(self.config, STATE.Backup)
                 self.state = STATE.Backup
             return
         else:
@@ -61,5 +61,5 @@ class Monitor:
                 self.config.probe.up,
             )
             if oughta_up and self.state != STATE.Primary:
-                apply_default_route(self.config, STATE.Primary)
+                switch_defualt_route(self.config, STATE.Primary)
                 self.state = STATE.Primary

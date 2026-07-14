@@ -1,9 +1,12 @@
 import logging
 
+from copy import deepcopy
+
 from .Route import (
     Route,
     show_route,
-    replace_route,
+    add_route,
+    delete_route,
 )
 from config import MwanConfig
 from config.State import STATE
@@ -26,39 +29,54 @@ def get_default_route(dev: str) -> Route:
     )
 
 
-def replace_default_route(route: Route, metric: int):
-    if metric < 0:
-        raise RuntimeError(f"negative metric: {metric}, route: {route}")
-    if route.metric == metric:
-        logger.info(f"same metric: {metric}, route={route}")
-        return
-
+def add_default_route(route: Route):
     args = ["default"]
 
     if route.gateway:
         args.extend(["via", route.gateway])
     if route.dev:
-        args.extend(["dev", route.dev, "metric", str(metric)])
+        args.extend(["dev", route.dev])
     if route.protocol:
         args.extend(["proto", route.protocol])
     if route.prefsrc:
         args.extend(["src", route.prefsrc])
+    if route.metric is not None:
+        args.extend(["metric", str(route.metric)])
 
-    args.extend(["metric", metric])
-
-    replace_route(args)
+    return add_route(args)
 
 
-def apply_default_route(config: MwanConfig, state: STATE):
+def del_default_route(route: Route):
+    args = ["default"]
+
+    if route.gateway:
+        args.extend(["via", route.gateway])
+    if route.dev:
+        args.extend(["dev", route.dev])
+    if route.protocol:
+        args.extend(["proto", route.protocol])
+    if route.prefsrc:
+        args.extend(["src", route.prefsrc])
+    if route.metric is not None:
+        args.extend(["metric", str(route.metric)])
+
+    return delete_route(
+        ["default", "via", route.gateway, "dev", route.dev, "metric", str(route.metric)]
+    )
+
+
+def switch_defualt_route(config: MwanConfig, state: STATE):
     primary_deft = get_default_route(config.primary.dev)
+    primary_deft_copy = deepcopy(primary_deft)
     backup_deft = get_default_route(config.backup.dev)
+    backup_metric = backup_deft.metric or 0
     if state == STATE.Backup:
-        metric = backup_deft.metric + config.primary.step
+        primary_deft.metric = backup_metric + config.primary.step
     elif state == STATE.Primary:
-        metric = max(backup_deft.metric - config.primary.step, 0)
+        primary_deft.metric = max(backup_metric - config.primary.step, 0)
 
-    replace_default_route(primary_deft, metric)
-    logger.warning(f"{config.primary.dev} switched to {state.name}")
+    if add_default_route(primary_deft) and del_default_route(primary_deft_copy):
+        logger.warning(f"{config.primary.dev} switched to {state.name}")
 
 
-__all__ = [apply_default_route]
+__all__ = [switch_defualt_route]
