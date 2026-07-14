@@ -32,10 +32,10 @@ def main() -> int:
     args = build_parse().parse_args()
 
     try:
-        from config import load_config
+        # from config import load_config
         from monitor.Monitor import Monitor
 
-        monitor = Monitor(load_config(args.config), args.config)
+        monitor = Monitor(args.config)
 
         def interrupt(signum: int, frame=None):
             monitor.stop(signum, frame)

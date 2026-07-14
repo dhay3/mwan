@@ -14,16 +14,16 @@ def ping(config: MwanConfig, addr: str) -> bool:
     return ICMP.ping(config, addr)
 
 
-def probe(config: MwanConfig) -> bool:
+def probe(config: MwanConfig, enable_log: bool = True) -> bool:
     pulses = []
-    uid = uuid.uuid4().hex[:8]
+    uid = uuid.uuid4().hex[:4]
     for addr in config.probe.address:
         try:
             puls = ping(config, addr)
         except Exception as exc:
-            raise RuntimeError(f"event_id:{uid}") from exc
-        if not puls:
-            logger.warning(f"event_id:{uid} addr:{addr} timeouted")
+            raise RuntimeError(f"probe:{uid}") from exc
+        if enable_log and not puls:
+            logger.warning(f"probe:{uid} addr:{addr} timeouted")
         pulses.append(puls)
 
     down = not any(pulses)
