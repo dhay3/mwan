@@ -1,7 +1,7 @@
+import json
 import logging
-
-
 from copy import deepcopy
+from pathlib import Path
 
 
 from .Route import (
@@ -17,12 +17,18 @@ logger = logging.getLogger('Route')
 
 
 def get_default_route(dev: str) -> Route:
-    defaults = show_route(['default', 'dev', dev])
+    defaults = get_default_routes(dev)
     if not defaults:
         raise RuntimeError(f'no default route for dev: {dev}')
 
-    default = min(defaults, key=lambda item: item.metric or 0)
-    return default.model_copy(update={'dev': default.dev or dev})
+    return min(defaults, key=lambda item: item.metric or 0)
+
+
+def get_default_routes(dev: str) -> list[Route]:
+    return [
+        route.model_copy(update={'dev': route.dev or dev})
+        for route in show_route(['default', 'dev', dev])
+    ]
 
 
 def add_default_route(route: Route):
@@ -56,9 +62,7 @@ def del_default_route(route: Route):
     if route.metric is not None:
         args.extend(['metric', str(route.metric)])
 
-    return delete_route(
-        ['default', 'via', route.gateway, 'dev', route.dev, 'metric', str(route.metric)]
-    )
+    return delete_route(args)
 
 
 def switch_defualt_route(config: MwanConfig, state: STATE):
@@ -78,4 +82,50 @@ def switch_defualt_route(config: MwanConfig, state: STATE):
         logger.warning(f'switched to: {state.name}')
 
 
-__all__ = [switch_defualt_route]
+def save_routes(config: MwanConfig, path: Path):
+    devices = dict.fromkeys([config.primary.dev, config.backup.dev])
+    routes = []
+    for dev in devices:
+        device_routes = get_default_routes(dev)
+        routes.extend(device_routes)
+    state = {
+        'routes': [route.model_dump(mode='json') for route in routes],
+    }
+    temp = path.with_suffix(f'{path.suffix}.tmp')
+    temp.write_text(
+        json.dumps(state, indent=2, ensure_ascii=False),
+        encoding='utf-8',
+    )
+    temp.replace(path)
+    logger.info(f'saved routes state: {path}')
+
+
+def restore_routes(path: Path):
+    if not path.exists():
+        return
+
+    state = json.loads(path.read_text(encoding='utf-8'))
+    stored_routes = [Route.model_validate(route) for route in state.get('routes', [])]
+
+    routes: dict[str, list[Route]] = {}
+    for desired_route in stored_routes:
+        routes.setdefault(desired_route.dev, []).append(desired_route)
+
+    for dev, desired_routes in routes.items():
+        current_routes = get_default_routes(dev)
+        for desired_route in desired_routes:
+            if desired_route not in current_routes:
+                add_default_route(desired_route)
+        for current_route in current_routes:
+            if current_route not in desired_routes:
+                del_default_route(current_route)
+
+    path.unlink()
+    logger.info(f'restored routes state: {path}')
+
+
+__all__ = [
+    restore_routes,
+    save_routes,
+    switch_defualt_route,
+]

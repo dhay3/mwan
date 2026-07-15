@@ -7,7 +7,11 @@ from config import MwanConfig, load_config, get_config_mtime
 from config.State import STATE
 from logger import set_debug
 from probe import probe
-from route import switch_defualt_route
+from route import (
+    restore_routes,
+    save_routes,
+    switch_defualt_route,
+)
 
 
 logger = logging.getLogger('Monitor')
@@ -23,17 +27,22 @@ class Monitor:
         self.up_cnt = 0
         self.state: STATE = STATE.Primary
         self.quit: Event = Event()
+        self.state_path = config_path.with_suffix('.state.json')
+        save_routes(self.config, self.state_path)
 
     def stop(self, signum: int, frame=None):
         self.quit.set()
 
     def run(self):
-        while not self.quit.is_set():
-            self.reload_config()
-            self.delegate()
+        try:
+            while not self.quit.is_set():
+                self.reload_config()
+                self.delegate()
 
-            if self.quit.wait(self.config.probe.delay):
-                break
+                if self.quit.wait(self.config.probe.delay):
+                    break
+        finally:
+            restore_routes(self.state_path)
 
     def reload_config(self):
         mtime = get_config_mtime(self.config_path)

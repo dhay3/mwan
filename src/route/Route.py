@@ -12,7 +12,6 @@ class Route(BaseModel):
     gateway: str | None = None
     dev: str | None = None
     proto: str | None = None
-    src: str | None = None
     prefsrc: str | None = None
     metric: int | None = None
 
@@ -41,7 +40,7 @@ def get_route(dst: str, args: list[Any]) -> Route:
         raise RuntimeError(f'failed to parse route: {command}') from e
     if not routes:
         raise RuntimeError(f'failed to get route: {dst}')
-    logger.debug(f'get: {command}')
+    # logger.debug(f'get: {command}')
     return Route.model_validate(routes[0])
 
 
