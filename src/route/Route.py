@@ -42,7 +42,7 @@ def get_route(dst: str, args: list[Any]) -> Route:
     if not routes:
         raise RuntimeError(f'failed to get route: {dst}')
     logger.debug(f'get: {command}')
-    return routes.get(0)
+    return Route.model_validate(routes[0])
 
 
 def add_route(args: list[Any]):
