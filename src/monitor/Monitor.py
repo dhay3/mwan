@@ -10,7 +10,7 @@ from probe import probe
 from route import switch_defualt_route
 
 
-logger = logging.getLogger("Monitor")
+logger = logging.getLogger('Monitor')
 
 
 class Monitor:
@@ -29,7 +29,6 @@ class Monitor:
 
     def run(self):
         while not self.quit.is_set():
-            logger.debug()
             self.reload_config()
             self.delegate()
 
@@ -46,7 +45,6 @@ class Monitor:
         set_debug(self.config.debug)
         self.down_cnt = 0
         self.up_cnt = 0
-        logger.info("config reloaded")
 
     def delegate(self):
         enable_log = self.state == STATE.Primary
@@ -60,7 +58,7 @@ class Monitor:
             )
             if enable_log:
                 logger.debug(
-                    "down_cnt=%s down_threshold=%s",
+                    'down_cnt=%s down_threshold=%s',
                     self.down_cnt,
                     self.config.probe.down,
                 )
@@ -74,7 +72,7 @@ class Monitor:
             oughta_up = self.config.probe.fast_up or self.up_cnt >= self.config.probe.up
             if not enable_log:
                 logger.debug(
-                    "up_cnt=%s up_threshold=%s",
+                    'up_cnt=%s up_threshold=%s',
                     self.up_cnt,
                     self.config.probe.up,
                 )

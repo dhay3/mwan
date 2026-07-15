@@ -5,14 +5,15 @@ from config import MwanConfig
 from scapy.all import (
     ICMP,
     IP,
+    ScopedIP,
     sr1,
 )
 
 
 def ping(config: MwanConfig, addr: str):
-    scope_addr = f"{socket.gethostbyname(addr)}%{config.primary.dev}"
+    scoped_addr = ScopedIP(socket.gethostbyname(addr), scope=config.primary.dev)
     for _ in range(config.probe.count):
-        packet = IP(dst=scope_addr) / ICMP(seq=_)
+        packet = IP(dst=scoped_addr) / ICMP(seq=_)
         ans = sr1(
             packet,
             timeout=config.probe.timeout,
