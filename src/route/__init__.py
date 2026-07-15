@@ -1,6 +1,8 @@
 import logging
 
+
 from copy import deepcopy
+
 
 from .Route import (
     Route,
@@ -19,14 +21,8 @@ def get_default_route(dev: str) -> Route:
     if not defaults:
         raise RuntimeError(f'no default route for dev: {dev}')
 
-    default = min(defaults, key=lambda item: int(item.get('metric', 0)))
-    return Route(
-        dev=dev,
-        gateway=default.get('gateway'),
-        protocol=default.get('protocol'),
-        metric=default.get('metric'),
-        prefsrc=default.get('prefsrc'),
-    )
+    default = min(defaults, key=lambda item: item.metric or 0)
+    return default.model_copy(update={'dev': default.dev or dev})
 
 
 def add_default_route(route: Route):
@@ -36,8 +32,8 @@ def add_default_route(route: Route):
         args.extend(['via', route.gateway])
     if route.dev:
         args.extend(['dev', route.dev])
-    if route.protocol:
-        args.extend(['proto', route.protocol])
+    if route.proto:
+        args.extend(['proto', route.proto])
     if route.prefsrc:
         args.extend(['src', route.prefsrc])
     if route.metric is not None:
@@ -53,8 +49,8 @@ def del_default_route(route: Route):
         args.extend(['via', route.gateway])
     if route.dev:
         args.extend(['dev', route.dev])
-    if route.protocol:
-        args.extend(['proto', route.protocol])
+    if route.proto:
+        args.extend(['proto', route.proto])
     if route.prefsrc:
         args.extend(['src', route.prefsrc])
     if route.metric is not None:
@@ -76,7 +72,6 @@ def switch_defualt_route(config: MwanConfig, state: STATE):
         primary_deft.metric = max(backup_metric - config.primary.step, 0)
 
     if primary_deft.metric == primary_deft_copy.metric:
-        logger.debug(f'metric unchanged, no need to switch: {state.name}')
         return
 
     if add_default_route(primary_deft) and del_default_route(primary_deft_copy):

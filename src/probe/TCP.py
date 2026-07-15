@@ -1,12 +1,12 @@
 import socket
 
 from config.Config import MwanConfig
+from .L2 import ether, resolve_target
 from scapy.all import (
     IP,
-    ScopedIP,
     TCP,
-    send,
-    sr1,
+    sendp,
+    srp1,
 )
 
 
@@ -26,26 +26,38 @@ def parse_addr(addr: str):
 
 def ping(config: MwanConfig, addr: str):
     host, port = parse_addr(addr)
-    scoped_host = ScopedIP(socket.gethostbyname(host), scope=config.primary.dev)
+    dev = config.primary.dev
+    dst_addr = socket.gethostbyname(host)
+    target = resolve_target(dev, dst_addr, config.probe.timeout)
 
     for _ in range(config.probe.count):
-        packet = IP(dst=scoped_host) / TCP(dport=port, flags='S')
-        ans = sr1(
+        packet = (
+            ether(target)
+            / IP(src=target.src_addr, dst=target.dst_addr)
+            / TCP(dport=port, flags='S')
+        )
+        ans = srp1(
             packet,
+            iface=dev,
             timeout=config.probe.timeout,
             verbose=False,
         )
         if ans and ans.haslayer(TCP):
             l3 = ans.getlayer(TCP)
             if l3.flags & 0x12 == 0x12:
-                packet = IP(dst=scoped_host) / TCP(
-                    dport=port,
-                    sport=l3.dport,
-                    flags='R',
-                    seq=l3.ack,
+                packet = (
+                    ether(target)
+                    / IP(src=target.src_addr, dst=target.dst_addr)
+                    / TCP(
+                        dport=port,
+                        sport=l3.dport,
+                        flags='R',
+                        seq=l3.ack,
+                    )
                 )
-                send(
+                sendp(
                     packet,
+                    iface=dev,
                     verbose=False,
                 )
                 return True

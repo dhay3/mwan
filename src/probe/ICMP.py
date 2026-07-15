@@ -1,21 +1,31 @@
 import socket
 
+
 from config import MwanConfig
 
 from scapy.all import (
+    Ether,
     ICMP,
     IP,
-    ScopedIP,
-    sr1,
+    srp1,
+    get_if_hwaddr,
+    get_if_addr,
+    arping,
 )
 
 
 def ping(config: MwanConfig, addr: str):
-    scoped_addr = ScopedIP(socket.gethostbyname(addr), scope=config.primary.dev)
+    dev = config.primary.dev
+    dst_addr = socket.gethostbyname(addr)
     for _ in range(config.probe.count):
-        packet = IP(dst=scoped_addr) / ICMP(seq=_)
-        ans = sr1(
+        packet = (
+            Ether(src=get_if_hwaddr(dev), dst=arping(dst_addr))
+            / IP(src=get_if_addr(dev), dst=dst_addr)
+            / ICMP()
+        )
+        ans = srp1(
             packet,
+            iface=dev,
             timeout=config.probe.timeout,
             verbose=False,
         )
