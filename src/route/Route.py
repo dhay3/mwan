@@ -11,7 +11,7 @@ class Route(BaseModel):
     dst: str | None = None
     gateway: str | None = None
     dev: str | None = None
-    proto: str | None = None
+    protocol: str | None = None
     prefsrc: str | None = None
     metric: int | None = None
 
@@ -20,7 +20,9 @@ def show_route(args: list[Any]) -> list[Route]:
     command = ['ip', '-j', '-4', 'route', 'show', *args]
     result = cmd(command)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or f'failed to read route: {command}')
+        raise RuntimeError(
+            f'failed to read route: {command} trace: {result.stderr.strip()}'
+        )
     try:
         routes = json.loads(result.stdout or '[]')
     except json.JSONDecodeError as e:
@@ -33,7 +35,9 @@ def get_route(dst: str, args: list[Any]) -> Route:
     command = ['ip', '-j', '-4', 'route', 'get', dst, *args]
     result = cmd(command)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or f'failed to get route: {command}')
+        raise RuntimeError(
+            f'failed to get route: {command} trace: {result.stderr.strip()}'
+        )
     try:
         routes = json.loads(result.stdout or '[]')
     except json.JSONDecodeError as e:
@@ -48,7 +52,9 @@ def add_route(args: list[Any]):
     command = ['ip', '-4', 'route', 'add', *args]
     result = cmd(command)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or f'failed to add route: {command}')
+        raise RuntimeError(
+            f'failed to add route: {command} trace: {result.stderr.strip()}'
+        )
     logger.debug(f'add: {command}')
     return True
 
@@ -58,7 +64,7 @@ def delete_route(args: list[Any]):
     result = cmd(command)
     if result.returncode != 0:
         raise RuntimeError(
-            result.stderr.strip() or f'failed to delete route: {command}'
+            f'failed to delete route: {command} trace: {result.stderr.strip()}'
         )
     logger.debug(f'delete: {command}')
     return True
@@ -69,7 +75,7 @@ def replace_route(args: list[Any]):
     result = cmd(command)
     if result.returncode != 0:
         raise RuntimeError(
-            result.stderr.strip() or f'failed to replace route: {command}'
+            f'failed to replace route: {command} trace: {result.stderr.strip()}'
         )
     logger.debug(f'replace: {command}')
     return True

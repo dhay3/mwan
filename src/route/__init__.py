@@ -38,8 +38,8 @@ def add_default_route(route: Route):
         args.extend(['via', route.gateway])
     if route.dev:
         args.extend(['dev', route.dev])
-    if route.proto:
-        args.extend(['proto', route.proto])
+    if route.protocol:
+        args.extend(['protocol', route.protocol])
     if route.prefsrc:
         args.extend(['src', route.prefsrc])
     if route.metric is not None:
@@ -55,8 +55,8 @@ def del_default_route(route: Route):
         args.extend(['via', route.gateway])
     if route.dev:
         args.extend(['dev', route.dev])
-    if route.proto:
-        args.extend(['proto', route.proto])
+    if route.protocol:
+        args.extend(['protocol', route.protocol])
     if route.prefsrc:
         args.extend(['src', route.prefsrc])
     if route.metric is not None:
