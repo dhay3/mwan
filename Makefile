@@ -20,16 +20,8 @@ package:
 		--specpath $(BUILD_DIR) \
 		$(ENTRYPOINT)
 
-
+oss:
+	ossutil cp -f $(DIST_DIR)/$(APP_NAME) oss://cpd-swy/temp/hz.cheng/mwan/mwan --acl public-read
 
 clean:
 	rm -rf $(BUILD_DIR) $(DIST_DIR)
-
-compile:
-	true
-
-install:
-	true
-
-sha1sum:
-	true

@@ -28,7 +28,7 @@ def build_parse():
 
 
 def main() -> int:
-    args = build_parse().parse_args(['-c', 'mwan.toml'])
+    args = build_parse().parse_args()
 
     try:
         from monitor.Monitor import Monitor

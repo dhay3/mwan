@@ -16,15 +16,15 @@ from config.State import STATE
 logger = logging.getLogger('Route')
 
 
-def get_default_route(dev: str) -> Route:
-    defaults = get_default_routes(dev)
+def show_default_route(dev: str) -> Route:
+    defaults = show_default_routes(dev)
     if not defaults:
         raise RuntimeError(f'no default route for dev: {dev}')
 
     return min(defaults, key=lambda item: item.metric or 0)
 
 
-def get_default_routes(dev: str) -> list[Route]:
+def show_default_routes(dev: str) -> list[Route]:
     return [
         route.model_copy(update={'dev': route.dev or dev})
         for route in show_route(['default', 'dev', dev])
@@ -66,9 +66,9 @@ def del_default_route(route: Route):
 
 
 def switch_defualt_route(config: MwanConfig, state: STATE):
-    primary_deft = get_default_route(config.primary.dev)
+    primary_deft = show_default_route(config.primary.dev)
     primary_deft_copy = deepcopy(primary_deft)
-    backup_deft = get_default_route(config.backup.dev)
+    backup_deft = show_default_route(config.backup.dev)
     backup_metric = backup_deft.metric or 0
     if state == STATE.Backup:
         primary_deft.metric = backup_metric + config.primary.step
@@ -86,7 +86,7 @@ def save_routes(config: MwanConfig, path: Path):
     devices = dict.fromkeys([config.primary.dev, config.backup.dev])
     routes = []
     for dev in devices:
-        device_routes = get_default_routes(dev)
+        device_routes = show_default_routes(dev)
         routes.extend(device_routes)
     state = {
         'routes': [route.model_dump(mode='json') for route in routes],
@@ -112,7 +112,7 @@ def restore_routes(path: Path):
         routes.setdefault(desired_route.dev, []).append(desired_route)
 
     for dev, desired_routes in routes.items():
-        current_routes = get_default_routes(dev)
+        current_routes = show_default_routes(dev)
         for desired_route in desired_routes:
             if desired_route not in current_routes:
                 add_default_route(desired_route)
