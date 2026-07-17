@@ -2,7 +2,7 @@ import subprocess
 
 
 def cmd(
-    command: list[str], *, timeout: int | None = None
+    command: list[str], *, timeout: int | None = 5
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,

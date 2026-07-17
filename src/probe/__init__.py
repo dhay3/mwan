@@ -1,5 +1,6 @@
 import logging
 import uuid
+from threading import Event
 
 from config import MwanConfig
 from . import ICMP, TCP
@@ -14,10 +15,17 @@ def ping(config: MwanConfig, addr: str) -> bool:
     return ICMP.ping(config, addr)
 
 
-def probe(config: MwanConfig, enable_log: bool = True) -> bool:
+def probe(
+    config: MwanConfig,
+    enable_log: bool = True,
+    quit_event: Event | None = None,
+) -> bool | None:
     pulses = []
     uid = uuid.uuid4().hex[:4]
     for addr in config.probe.address:
+        if quit_event is not None and quit_event.is_set():
+            return None
+
         try:
             puls = ping(config, addr)
         except Exception as exc:
@@ -29,6 +37,10 @@ def probe(config: MwanConfig, enable_log: bool = True) -> bool:
                     addr,
                     exc,
                 )
+
+        if quit_event is not None and quit_event.is_set():
+            return None
+
         if enable_log:
             if puls:
                 logger.debug(f'trans:{uid} addr:{addr} succeeded')

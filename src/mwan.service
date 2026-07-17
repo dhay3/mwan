@@ -6,6 +6,9 @@ After=network-online.target
 [Service]
 Type=simple
 ExecStart=/opt/mwan/mwan --config /opt/mwan/mwan.toml
+TimeoutStopSec=15s
+KillSignal=SIGTERM
+KillMode=control-group
 StandardOutput=journal
 StandardError=journal
 

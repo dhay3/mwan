@@ -55,7 +55,10 @@ class Monitor:
         self.up_cnt = 0
 
     def delegate(self):
-        down = probe(self.config)
+        down = probe(self.config, quit_event=self.quit)
+
+        if down is None or self.quit.is_set():
+            return
 
         if down:
             self.down_cnt += 1
