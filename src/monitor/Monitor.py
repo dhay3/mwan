@@ -76,7 +76,7 @@ class Monitor:
             self.up_cnt += 1
             self.down_cnt = 0
             oughta_up = self.config.probe.fast_up or self.up_cnt >= self.config.probe.up
-            if self.up_cnt >= 3:
+            if self.up_cnt <= 3:
                 logger.debug(
                     'up_cnt=%s up_threshold=%s',
                     self.up_cnt,
