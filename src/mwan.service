@@ -6,8 +6,6 @@ After=network-online.target
 [Service]
 Type=simple
 ExecStart=/opt/mwan/mwan --config /opt/mwan/mwan.toml
-#Restart=always
-#RestartSec=2
 StandardOutput=journal
 StandardError=journal
 
