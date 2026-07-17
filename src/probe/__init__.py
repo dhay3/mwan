@@ -21,7 +21,14 @@ def probe(config: MwanConfig, enable_log: bool = True) -> bool:
         try:
             puls = ping(config, addr)
         except Exception as exc:
-            raise RuntimeError(f'trans:{uid} addr:{addr} failed') from exc
+            puls = False
+            if enable_log:
+                logger.warning(
+                    'trans:%s addr:%s probe failed: %s',
+                    uid,
+                    addr,
+                    exc,
+                )
         if enable_log:
             if puls:
                 logger.debug(f'trans:{uid} addr:{addr} succeeded')
