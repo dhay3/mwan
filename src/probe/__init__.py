@@ -23,7 +23,7 @@ def probe(config: MwanConfig, enable_log: bool = True) -> bool:
         except Exception as exc:
             puls = False
             if enable_log:
-                logger.warning(
+                logger.debug(
                     'trans:%s addr:%s probe error: %s',
                     uid,
                     addr,
