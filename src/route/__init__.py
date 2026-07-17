@@ -70,9 +70,9 @@ def switch_defualt_route(config: MwanConfig, state: STATE):
     primary_deft_copy = deepcopy(primary_deft)
     backup_deft = show_default_route(config.backup.dev)
     backup_metric = backup_deft.metric or 0
-    if state == STATE.Backup:
+    if state == STATE.BACKUP:
         primary_deft.metric = backup_metric + config.primary.step
-    elif state == STATE.Primary:
+    elif state == STATE.PRIMARY:
         primary_deft.metric = max(backup_metric - config.primary.step, 0)
 
     if primary_deft.metric == primary_deft_copy.metric:

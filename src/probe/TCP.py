@@ -1,5 +1,3 @@
-import socket
-
 from config.Config import MwanConfig
 from scapy.all import (
     Ether,
@@ -12,6 +10,7 @@ from scapy.all import (
 )
 
 from .ARP import arp_request, get_hwsrc
+from .DNS import resolve
 
 
 def parse_addr(addr: str):
@@ -31,7 +30,7 @@ def parse_addr(addr: str):
 def ping(config: MwanConfig, addr: str):
     host, port = parse_addr(addr)
     dev = config.primary.dev
-    dst_addr = socket.gethostbyname(host)
+    dst_addr = resolve(host)
     src_addr = get_if_addr(dev)
     src_hwaddr = get_if_hwaddr(dev)
     dst_hwaddr = get_hwsrc(arp_request(src_addr, dst_addr, dev, config.probe.timeout))
