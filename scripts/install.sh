@@ -2,70 +2,85 @@
 
 set -euo pipefail
 
-readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-readonly PROJECT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
-readonly INSTALL_DIR="/opt/mwan"
-readonly SYSTEMD_DIR="/etc/systemd/system"
-readonly SERVICE_NAME="mwan.service"
+readonly BASE_URL=${MWAN_BASE_URL:-https://cpd-swy.oss-cn-hangzhou.aliyuncs.com/temp/hz.cheng/mwan}
+readonly INSTALL_DIR=/opt/mwan
+readonly SYSTEMD_DIR=/etc/systemd/system
+readonly SERVICE_NAME=mwan.service
+readonly TEMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/mwan-install.XXXXXXXX")
 
-readonly BINARY_SOURCE="${1:-${PROJECT_DIR}/dist/mwan}"
-readonly CONFIG_SOURCE="${2:-${PROJECT_DIR}/src/mwan.toml}"
-readonly SERVICE_SOURCE="${PROJECT_DIR}/src/${SERVICE_NAME}"
+cleanup() {
+  rm -rf -- "${TEMP_DIR}"
+}
+trap cleanup EXIT
 
-function info() {
-  printf '[INFO] %s\n' "${*}"
+info() {
+  printf '[INFO] %s\n' "$*"
 }
 
-function error() {
-  printf '[ERROR] %s\n' "${*}" >&2
+error() {
+  printf '[ERROR] %s\n' "$*" >&2
   exit 1
 }
 
-function require_root() {
+require_root() {
   if ((EUID != 0)); then
-    error "请使用 root 用户运行此脚本，例如：sudo ${0}"
+    error "Run this script as root, for example: sudo $0"
   fi
 }
 
-function require_command() {
-  command -v "${1}" > /dev/null 2>&1 || error "未找到所需命令：${1}"
+require_command() {
+  command -v "$1" > /dev/null 2>&1 || error "Required command not found: $1"
 }
 
-function require_file() {
-  [[ -f "${1}" ]] || error "文件不存在：${1}"
+download() {
+  local name=$1
+  info "Downloading ${name}"
+  curl \
+    --fail \
+    --location \
+    --silent \
+    --show-error \
+    --output "${TEMP_DIR}/${name}" \
+    "${BASE_URL}/${name}"
 }
 
-function install_files() {
+install_files() {
   install -d -m 0755 "${INSTALL_DIR}"
-  install -m 0755 "${BINARY_SOURCE}" "${INSTALL_DIR}/mwan"
+  install -m 0755 "${TEMP_DIR}/mwan" "${INSTALL_DIR}/mwan"
 
-  if [[ -e "${INSTALL_DIR}/mwan.toml" ]]; then
-    info "保留已有配置：${INSTALL_DIR}/mwan.toml"
+  if [[ -e ${INSTALL_DIR}/mwan.toml ]]; then
+    info "Preserving existing configuration: ${INSTALL_DIR}/mwan.toml"
   else
-    install -m 0644 "${CONFIG_SOURCE}" "${INSTALL_DIR}/mwan.toml"
+    install -m 0644 "${TEMP_DIR}/mwan.toml" "${INSTALL_DIR}/mwan.toml"
   fi
 
-  install -m 0644 "${SERVICE_SOURCE}" "${SYSTEMD_DIR}/${SERVICE_NAME}"
+  install -m 0644 \
+    "${TEMP_DIR}/${SERVICE_NAME}" \
+    "${SYSTEMD_DIR}/${SERVICE_NAME}"
 }
 
-function start_service() {
+main() {
+  require_root
+  require_command curl
+  require_command install
+  require_command sha1sum
+  require_command systemctl
+
+  download mwan
+  download mwan.sha1
+  download mwan.toml
+  download "${SERVICE_NAME}"
+
+  info 'Verifying mwan SHA-1 checksum'
+  (cd "${TEMP_DIR}" && sha1sum --check mwan.sha1)
+
+  systemctl stop "${SERVICE_NAME}" > /dev/null 2>&1 || true
+  install_files
   systemctl daemon-reload
   systemctl enable --now "${SERVICE_NAME}"
-}
 
-function main() {
-  require_root
-  require_command install
-  require_command systemctl
-  require_file "${BINARY_SOURCE}"
-  require_file "${CONFIG_SOURCE}"
-  require_file "${SERVICE_SOURCE}"
-
-  info "安装 mwan 到 ${INSTALL_DIR}"
-  install_files
-  start_service
-  info "mwan 安装完成，服务状态："
+  info 'mwan binary installation completed'
   systemctl --no-pager --full status "${SERVICE_NAME}"
 }
 
-main
+main "$@"

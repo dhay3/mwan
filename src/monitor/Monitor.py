@@ -25,9 +25,8 @@ class Monitor:
         set_debug(self.config.debug)
         self.down_cnt = 0
         self.up_cnt = 0
-        self.state: STATE = STATE.Primary
         self.quit: Event = Event()
-        self.state_path = config_path.with_suffix('.state.json')
+        self.state_path = config_path.with_suffix('.db')
         save_routes(self.config, self.state_path)
 
     def stop(self, signum: int, frame=None):
@@ -56,8 +55,7 @@ class Monitor:
         self.up_cnt = 0
 
     def delegate(self):
-        enable_log = self.state == STATE.Primary
-        down = probe(self.config, enable_log)
+        down = probe(self.config)
 
         if down:
             self.down_cnt += 1
@@ -65,26 +63,22 @@ class Monitor:
             oughta_down = (
                 self.config.probe.fast_down or self.down_cnt >= self.config.probe.down
             )
-            if enable_log:
-                logger.debug(
-                    'down_cnt=%s down_threshold=%s',
-                    self.down_cnt,
-                    self.config.probe.down,
-                )
-            if oughta_down and self.state != STATE.Backup:
+            logger.debug(
+                'down_cnt=%s down_threshold=%s',
+                self.down_cnt,
+                self.config.probe.down,
+            )
+            if oughta_down:
                 switch_defualt_route(self.config, STATE.Backup)
-                self.state = STATE.Backup
             return
         else:
             self.up_cnt += 1
             self.down_cnt = 0
             oughta_up = self.config.probe.fast_up or self.up_cnt >= self.config.probe.up
-            if not enable_log:
-                logger.debug(
-                    'up_cnt=%s up_threshold=%s',
-                    self.up_cnt,
-                    self.config.probe.up,
-                )
-            if oughta_up and self.state != STATE.Primary:
+            logger.debug(
+                'up_cnt=%s up_threshold=%s',
+                self.up_cnt,
+                self.config.probe.up,
+            )
+            if oughta_up:
                 switch_defualt_route(self.config, STATE.Primary)
-                self.state = STATE.Primary

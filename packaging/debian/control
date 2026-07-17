@@ -1,0 +1,10 @@
+Package: mwan
+Version: @VERSION@
+Section: net
+Priority: optional
+Architecture: @ARCHITECTURE@
+Depends: iproute2, systemd
+Maintainer: cyberpelican <62749885+dhay3@users.noreply.github.com>
+Description: Multi-WAN route failover monitor
+ Monitors the primary network path and adjusts default-route metrics to fail
+ over to a backup interface and restore the primary route after recovery.

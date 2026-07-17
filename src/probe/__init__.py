@@ -24,7 +24,7 @@ def probe(config: MwanConfig, enable_log: bool = True) -> bool:
             puls = False
             if enable_log:
                 logger.warning(
-                    'trans:%s addr:%s probe failed: %s',
+                    'trans:%s addr:%s probe error: %s',
                     uid,
                     addr,
                     exc,
