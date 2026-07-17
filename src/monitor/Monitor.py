@@ -69,7 +69,7 @@ class Monitor:
                 self.config.probe.down,
             )
             if oughta_down:
-                switch_defualt_route(self.config, STATE.Backup)
+                switch_defualt_route(self.config, STATE.BACKUP)
             return
         else:
             self.up_cnt += 1
@@ -81,4 +81,4 @@ class Monitor:
                 self.config.probe.up,
             )
             if oughta_up:
-                switch_defualt_route(self.config, STATE.Primary)
+                switch_defualt_route(self.config, STATE.PRIMARY)
