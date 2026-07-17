@@ -63,11 +63,12 @@ class Monitor:
             oughta_down = (
                 self.config.probe.fast_down or self.down_cnt >= self.config.probe.down
             )
-            logger.debug(
-                'down_cnt=%s down_threshold=%s',
-                self.down_cnt,
-                self.config.probe.down,
-            )
+            if self.down_cnt <= 3:
+                logger.debug(
+                    'down_cnt=%s down_threshold=%s',
+                    self.down_cnt,
+                    self.config.probe.down,
+                )
             if oughta_down:
                 switch_defualt_route(self.config, STATE.BACKUP)
             return
@@ -75,10 +76,11 @@ class Monitor:
             self.up_cnt += 1
             self.down_cnt = 0
             oughta_up = self.config.probe.fast_up or self.up_cnt >= self.config.probe.up
-            logger.debug(
-                'up_cnt=%s up_threshold=%s',
-                self.up_cnt,
-                self.config.probe.up,
-            )
+            if self.up_cnt >= 3:
+                logger.debug(
+                    'up_cnt=%s up_threshold=%s',
+                    self.up_cnt,
+                    self.config.probe.up,
+                )
             if oughta_up:
                 switch_defualt_route(self.config, STATE.PRIMARY)
