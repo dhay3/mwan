@@ -41,7 +41,10 @@ class Monitor:
                 if self.quit.wait(self.config.probe.delay):
                     break
         finally:
-            restore_routes(self.state_path)
+            try:
+                restore_routes(self.state_path)
+            except Exception:
+                logger.exception('failed to restore routes')
 
     def reload_config(self):
         mtime = get_config_mtime(self.config_path)
