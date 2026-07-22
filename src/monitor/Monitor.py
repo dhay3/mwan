@@ -59,12 +59,7 @@ class Monitor:
             or config.backup.dev != self.config.backup.dev
         ):
             logger.error(
-                'ignored config reload: interface changes require a service restart '
-                '(primary: %s -> %s, backup: %s -> %s)',
-                self.config.primary.dev,
-                config.primary.dev,
-                self.config.backup.dev,
-                config.backup.dev,
+                f'config reload ignored: primary: {self.config.primary.dev} -> {config.primary.dev}, backup: {self.config.backup.dev} -> {config.backup.dev}',
             )
             return
 
