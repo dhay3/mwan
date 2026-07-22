@@ -5,7 +5,8 @@ import logging
 import signal
 from pathlib import Path
 
-import logger as LOG  # noqa: F401
+import utils.logger as LOG  # noqa: F401
+from utils.lock import Lock
 
 logger = logging.getLogger('Main')
 
@@ -33,11 +34,12 @@ def main() -> int:
     try:
         from monitor.Monitor import Monitor
 
-        monitor = Monitor(args.config)
+        with Lock(Path('/run/lock/mwan.lock')):
+            monitor = Monitor(args.config)
 
-        signal.signal(signal.SIGINT, monitor.stop)
-        signal.signal(signal.SIGTERM, monitor.stop)
-        monitor.run()
+            signal.signal(signal.SIGINT, monitor.stop)
+            signal.signal(signal.SIGTERM, monitor.stop)
+            monitor.run()
     except Exception:
         logger.exception('stopped with an error')
         return 1

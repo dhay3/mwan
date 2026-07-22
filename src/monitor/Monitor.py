@@ -5,7 +5,7 @@ from threading import Event
 
 from config import MwanConfig, load_config, get_config_mtime
 from config.State import STATE
-from logger import set_debug
+from utils.logger import set_debug
 from probe import probe
 from route import (
     restore_routes,
@@ -51,8 +51,24 @@ class Monitor:
         if mtime is None or mtime == self.config_mtime:
             return
 
+        config = load_config(self.config_path)
         self.config_mtime = mtime
-        self.config = load_config(self.config_path)
+
+        if (
+            config.primary.dev != self.config.primary.dev
+            or config.backup.dev != self.config.backup.dev
+        ):
+            logger.error(
+                'ignored config reload: interface changes require a service restart '
+                '(primary: %s -> %s, backup: %s -> %s)',
+                self.config.primary.dev,
+                config.primary.dev,
+                self.config.backup.dev,
+                config.backup.dev,
+            )
+            return
+
+        self.config = config
         set_debug(self.config.debug)
         self.down_cnt = 0
         self.up_cnt = 0
