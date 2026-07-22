@@ -65,6 +65,12 @@ def del_default_route(route: Route):
     return delete_route(args)
 
 
+def same_route_bypass_metric(left: Route, right: Route) -> bool:
+    return left.model_copy(update={'metric': None}) == right.model_copy(
+        update={'metric': None}
+    )
+
+
 def switch_defualt_route(config: MwanConfig, state: STATE):
     primary_deft = show_default_route(config.primary.dev)
     primary_deft_copy = deepcopy(primary_deft)
@@ -116,8 +122,13 @@ def restore_routes(path: Path):
         for desired_route in desired_routes:
             if desired_route not in current_routes:
                 add_default_route(desired_route)
+
         for current_route in current_routes:
-            if current_route not in desired_routes:
+            is_variant = any(
+                same_route_bypass_metric(current_route, desired_route)
+                for desired_route in desired_routes
+            )
+            if current_route not in desired_routes and is_variant:
                 del_default_route(current_route)
 
     path.unlink()
