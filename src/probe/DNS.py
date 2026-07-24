@@ -60,4 +60,4 @@ def resolve(host: str, dev: str, timeout: int) -> str:
             if answer.type == 1:
                 return str(IPv4Address(answer.rdata))
 
-    raise RuntimeError(f'dns resolve failed via dev {dev}: {host}')
+    raise RuntimeError(f'resolve failed via {dev}: {host}')

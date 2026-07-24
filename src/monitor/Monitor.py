@@ -52,6 +52,7 @@ class Monitor:
             return
 
         config = load_config(self.config_path)
+        self.conf = config
         self.config_mtime = mtime
 
         if (
