@@ -13,6 +13,7 @@ from scapy.all import (
 )
 
 from .ARP import arp_request, get_hwsrc
+from error import MwanProbeError
 
 
 def resolve(host: str, dev: str, timeout: int) -> str:
@@ -60,4 +61,4 @@ def resolve(host: str, dev: str, timeout: int) -> str:
             if answer.type == 1:
                 return str(IPv4Address(answer.rdata))
 
-    raise RuntimeError(f'resolve failed via {dev}: {host}')
+    raise MwanProbeError(f'resolve failed via {dev}: {host}')

@@ -12,20 +12,22 @@ from scapy.all import (
 from .ARP import arp_request, get_hwsrc
 from .DNS import resolve
 
+from error import MwanProbeError
+
 
 def parse_addr(addr: str):
     if ':' not in addr or addr.endswith(':'):
-        raise ValueError(f'missing port: {addr}')
+        raise MwanProbeError(f'missing port: {addr}')
 
     host, port = addr.split(':')
 
     try:
         port = int(port)
     except ValueError:
-        raise ValueError(f'invalid port: {addr}')
+        raise MwanProbeError(f'invalid port: {addr}')
 
     if port < 1 or port > 65535:
-        raise ValueError(f'invalid port: {addr}')
+        raise MwanProbeError(f'invalid port: {addr}')
 
     return host, port
 

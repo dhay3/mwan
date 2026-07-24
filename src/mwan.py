@@ -25,15 +25,14 @@ def build_parse():
 
 def main() -> int:
     args = build_parse().parse_args()
+    import utils.logger as LOG  # noqa: F401
+    from utils.lock import Lock
+    from monitor.Monitor import Monitor
+
+    logger = logging.getLogger('Main')
+    locker = Lock(Path('/run/lock/mwan.lock'))
 
     try:
-        import utils.logger as LOG  # noqa: F401
-        from utils.lock import Lock
-        from monitor.Monitor import Monitor
-
-        locker = Lock(Path('/run/lock/mwan.lock'))
-        logger = logging.getLogger('Main')
-
         with locker:
             monitor = Monitor(args.config)
 

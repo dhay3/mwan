@@ -5,6 +5,7 @@ from scapy.all import (
 )
 
 from route.Route import get_route
+from error import MwanProbeError
 
 
 def arp_request(src: str, dst: str, dev: str, timeout: int):
@@ -26,5 +27,5 @@ def arp_request(src: str, dst: str, dev: str, timeout: int):
 
 def get_hwsrc(ans) -> str:
     if not ans or not ans.haslayer(ARP):
-        raise RuntimeError('failed to resolve MAC address from ARP response')
+        raise MwanProbeError('failed to resolve MAC address from ARP response')
     return ans.getlayer(ARP).hwsrc

@@ -30,7 +30,7 @@ down = 3
 #Failover quickly on DOWN
 fast_down = 0
 
-Number of UP Probes to switch back to Primary
+#Number of UP Probes to switch back to Primary
 up = 5
 
 #Recover quickly on UP

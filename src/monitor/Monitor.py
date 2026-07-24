@@ -10,7 +10,7 @@ from probe import probe
 from route import (
     restore_routes,
     save_routes,
-    switch_defualt_route,
+    switch_default_route,
 )
 
 
@@ -26,8 +26,8 @@ class Monitor:
         self.down_cnt = 0
         self.up_cnt = 0
         self.quit: Event = Event()
-        self.state_path = config_path.with_suffix('.db')
-        save_routes(self.config, self.state_path)
+        self.db_path = config_path.with_suffix('.db')
+        save_routes(self.config, self.db_path)
 
     def stop(self, signum: int, frame=None):
         self.quit.set()
@@ -42,9 +42,9 @@ class Monitor:
                     break
         finally:
             try:
-                restore_routes(self.state_path)
+                restore_routes(self.db_path)
             except Exception:
-                logger.exception('failed to restore routes from db')
+                logger.exception(f'failed to restore routes from {self.db_path}')
 
     def reload_config(self):
         mtime = get_config_mtime(self.config_path)
@@ -52,7 +52,6 @@ class Monitor:
             return
 
         config = load_config(self.config_path)
-        self.conf = config
         self.config_mtime = mtime
 
         if (
@@ -88,7 +87,7 @@ class Monitor:
                     self.config.probe.down,
                 )
             if oughta_down:
-                switch_defualt_route(self.config, STATE.BACKUP)
+                switch_default_route(self.config, STATE.BACKUP)
             return
         else:
             self.up_cnt += 1
@@ -101,4 +100,4 @@ class Monitor:
                     self.config.probe.up,
                 )
             if oughta_up:
-                switch_defualt_route(self.config, STATE.PRIMARY)
+                switch_default_route(self.config, STATE.PRIMARY)

@@ -12,6 +12,7 @@ from .Route import (
 )
 from config import MwanConfig
 from config.State import STATE
+from error import MwanRouteError
 
 logger = logging.getLogger('Route')
 
@@ -19,7 +20,7 @@ logger = logging.getLogger('Route')
 def show_default_route(dev: str) -> Route:
     defaults = show_default_routes(dev)
     if not defaults:
-        raise RuntimeError(f'no default route for dev: {dev}')
+        raise MwanRouteError(f'no default route for dev: {dev}')
 
     return min(defaults, key=lambda item: item.metric or 0)
 
@@ -65,7 +66,7 @@ def del_default_route(route: Route):
     return delete_route(args)
 
 
-def switch_defualt_route(config: MwanConfig, state: STATE):
+def switch_default_route(config: MwanConfig, state: STATE):
     primary_deft = show_default_route(config.primary.dev)
     primary_deft_copy = deepcopy(primary_deft)
     backup_deft = show_default_route(config.backup.dev)
@@ -89,6 +90,9 @@ def same_route(left: Route, right: Route) -> bool:
 
 
 def save_routes(config: MwanConfig, path: Path):
+    if path.exists():
+        logger.warning(f'resume from an unclean shutdown, reusing: {path}')
+        return
     devices = dict.fromkeys([config.primary.dev, config.backup.dev])
     routes = []
     for dev in devices:
@@ -137,5 +141,5 @@ def restore_routes(path: Path):
 __all__ = [
     restore_routes,
     save_routes,
-    switch_defualt_route,
+    switch_default_route,
 ]
