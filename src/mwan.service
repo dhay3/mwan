@@ -2,11 +2,15 @@
 Description=IP SLA implementation for Linux.
 Wants=network-online.target
 After=network-online.target
+StartLimitIntervalSec=30
+StartLimitBurst=3
 
 [Service]
 Type=simple
 ExecStart=/opt/mwan/mwan --config /opt/mwan/mwan.toml
 TimeoutStopSec=15s
+Restart=on-failure
+RestartSec=5
 KillSignal=SIGTERM
 KillMode=control-group
 StandardOutput=journal

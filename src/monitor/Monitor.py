@@ -44,7 +44,7 @@ class Monitor:
             try:
                 restore_routes(self.state_path)
             except Exception:
-                logger.exception('failed to restore routes')
+                logger.exception('failed to restore routes from db')
 
     def reload_config(self):
         mtime = get_config_mtime(self.config_path)

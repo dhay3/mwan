@@ -1,26 +1,37 @@
+#Enable debug log
 debug = 0
 
 [Primary]
+#Primary NIC
 dev = "ens19"
 
 [Backup]
+#Backup NIC
 dev = "ens18"
 
 [Probe]
+#Addresses for ping
 address = ["dns.aliyun.com:80", "119.29.29.29"]
 #address = ["223.5.5.5:80", "119.29.29.29"]
 #address = ["192.100.100.100","192.100.100.101"]
 
+#Number of ping
 count = 1
 
+#Seconds of ping timeout
 timeout = 1
 
+#Delay seconds between probes
 delay = 3
 
+#Number of DOWN probes to switch to Backup
 down = 3
 
+#Failover quickly on DOWN
 fast_down = 0
 
+Number of UP Probes to switch back to Primary
 up = 5
 
+#Recover quickly on UP
 fast_up = 0

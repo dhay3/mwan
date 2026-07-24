@@ -16,13 +16,13 @@ class Lock:
         try:
             fd = os.open(self.path, flags, 0o644)
         except OSError as exc:
-            raise RuntimeError(f'failed to open instance lock: {self.path}') from exc
+            raise RuntimeError(f'failed to open lock: {self.path}') from exc
 
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
             os.close(fd)
-            raise RuntimeError('another mwan instance is already running') from exc
+            raise RuntimeError('another instance is already running') from exc
         except OSError:
             os.close(fd)
             raise
@@ -33,7 +33,7 @@ class Lock:
         except OSError as exc:
             fcntl.flock(fd, fcntl.LOCK_UN)
             os.close(fd)
-            raise RuntimeError(f'failed to update instance lock: {self.path}') from exc
+            raise RuntimeError(f'failed to update lock: {self.path}') from exc
         self.fd = fd
 
     def release(self):

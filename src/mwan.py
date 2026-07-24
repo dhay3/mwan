@@ -5,11 +5,6 @@ import logging
 import signal
 from pathlib import Path
 
-import utils.logger as LOG  # noqa: F401
-from utils.lock import Lock
-
-logger = logging.getLogger('Main')
-
 
 def build_parse():
     parser = argparse.ArgumentParser(
@@ -32,9 +27,14 @@ def main() -> int:
     args = build_parse().parse_args()
 
     try:
+        import utils.logger as LOG  # noqa: F401
+        from utils.lock import Lock
         from monitor.Monitor import Monitor
 
-        with Lock(Path('/run/lock/mwan.lock')):
+        locker = Lock(Path('/run/lock/mwan.lock'))
+        logger = logging.getLogger('Main')
+
+        with locker:
             monitor = Monitor(args.config)
 
             signal.signal(signal.SIGINT, monitor.stop)

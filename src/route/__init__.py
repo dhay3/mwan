@@ -65,12 +65,6 @@ def del_default_route(route: Route):
     return delete_route(args)
 
 
-def same_route_bypass_metric(left: Route, right: Route) -> bool:
-    return left.model_copy(update={'metric': None}) == right.model_copy(
-        update={'metric': None}
-    )
-
-
 def switch_defualt_route(config: MwanConfig, state: STATE):
     primary_deft = show_default_route(config.primary.dev)
     primary_deft_copy = deepcopy(primary_deft)
@@ -88,6 +82,12 @@ def switch_defualt_route(config: MwanConfig, state: STATE):
         logger.warning(f'switched to: {state.name}')
 
 
+def same_route(left: Route, right: Route) -> bool:
+    return left.model_copy(update={'metric': None}) == right.model_copy(
+        update={'metric': None}
+    )
+
+
 def save_routes(config: MwanConfig, path: Path):
     devices = dict.fromkeys([config.primary.dev, config.backup.dev])
     routes = []
@@ -103,7 +103,7 @@ def save_routes(config: MwanConfig, path: Path):
         encoding='utf-8',
     )
     temp.replace(path)
-    logger.info(f'saved routes state: {path}')
+    logger.info(f'saved routes: {path}')
 
 
 def restore_routes(path: Path):
@@ -124,15 +124,14 @@ def restore_routes(path: Path):
                 add_default_route(desired_route)
 
         for current_route in current_routes:
-            is_variant = any(
-                same_route_bypass_metric(current_route, desired_route)
+            if current_route not in desired_routes and any(
+                same_route(current_route, desired_route)
                 for desired_route in desired_routes
-            )
-            if current_route not in desired_routes and is_variant:
+            ):
                 del_default_route(current_route)
 
     path.unlink()
-    logger.info(f'restored routes state: {path}')
+    logger.info(f'restored routes: {path}')
 
 
 __all__ = [
