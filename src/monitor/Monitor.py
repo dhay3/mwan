@@ -89,12 +89,12 @@ class Monitor:
         self.state = get_state(self.config)
 
     def delegate(self):
-        state = self.current_state()
-        if state == STATE.UNKNOWN:
-            logger.info(f'enter {state} state')
+        current_state = self.current_state()
+        if current_state == STATE.UNKNOWN:
+            logger.info(f'enter {current_state} state')
             return
         try:
-            up = probe(self.config, state, quit_event=self.quit)
+            up = probe(self.config, current_state, quit_event=self.quit)
         except Exception:
             logger.exception('probe failed')
             return
@@ -102,7 +102,7 @@ class Monitor:
         if up is None or self.quit.is_set():
             return
 
-        if state == STATE.PRIMARY:
+        if current_state == STATE.PRIMARY:
             if up:
                 self.down_cnt = 0
                 return
@@ -121,7 +121,7 @@ class Monitor:
                 self.switch(STATE.BACKUP)
             return
 
-        if state == STATE.BACKUP:
+        if current_state == STATE.BACKUP:
             if not up:
                 self.up_cnt = 0
                 return
