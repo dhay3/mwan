@@ -12,7 +12,6 @@ from route import (
     store_routes,
     switch_default_route,
 )
-from error import MwanRouteError
 
 
 logger = logging.getLogger('Monitor')
@@ -27,7 +26,6 @@ class Monitor:
         self.down_cnt = 0
         self.up_cnt = 0
         self.state = get_state(self.config)
-        logger.info(f'initial state: {self.state.name}')
         self.db_path = config_path.with_suffix('.db')
         store_routes(self.config, self.db_path)
         self.quit: Event = Event()
@@ -43,11 +41,11 @@ class Monitor:
 
                 if self.quit.wait(self.config.probe.delay):
                     break
-        except BaseException:
+        except Exception:
             try:
                 self.cleanup(unexpected=True)
             except Exception:
-                logger.exception(f'failed to clean up: {self.db_path}')
+                logger.exception(f'clean up failed: {self.db_path}')
             raise
         else:
             self.cleanup()
@@ -62,7 +60,7 @@ class Monitor:
             return
 
         self.db_path.unlink(missing_ok=True)
-        logger.info('route restore disabled')
+        logger.info('restore routes disabled')
 
     def reload_config(self):
         if not self.config.general.hot_reload:
@@ -80,7 +78,7 @@ class Monitor:
             or config.backup.dev != self.config.backup.dev
         ):
             logger.error(
-                f'config reload ignored: primary: {self.config.primary.dev} -> {config.primary.dev}, backup: {self.config.backup.dev} -> {config.backup.dev}',
+                f'config reload conflict: primary: {self.config.primary.dev} -> {config.primary.dev}, backup: {self.config.backup.dev} -> {config.backup.dev}',
             )
             return
 
@@ -91,13 +89,14 @@ class Monitor:
         self.state = get_state(self.config)
 
     def delegate(self):
-        state = self.refresh_state()
-        if self.state == STATE.UNKNOWN:
+        state = self.current_state()
+        if state == STATE.UNKNOWN:
+            logger.info(f'enter {state} state')
             return
         try:
             up = probe(self.config, state, quit_event=self.quit)
         except Exception:
-            logger.exception('probe cycle failed; counters remain unchanged')
+            logger.exception('probe failed')
             return
 
         if up is None or self.quit.is_set():
@@ -122,25 +121,29 @@ class Monitor:
                 self.switch(STATE.BACKUP)
             return
 
-        if not up:
-            self.up_cnt = 0
+        if state == STATE.BACKUP:
+            if not up:
+                self.up_cnt = 0
+                return
+
+            self.up_cnt += 1
+            self.down_cnt = 0
+            oughta_up = (
+                self.config.probe.fast_failover or self.up_cnt >= self.config.probe.up
+            )
+            if self.up_cnt <= 3:
+                logger.debug(
+                    f'up_cnt={self.up_cnt} up_threshold={self.config.probe.up}'
+                )
+            if oughta_up:
+                self.switch(STATE.PRIMARY)
             return
 
-        self.up_cnt += 1
-        self.down_cnt = 0
-        oughta_up = (
-            self.config.probe.fast_recover or self.up_cnt >= self.config.probe.up
-        )
-        if self.up_cnt <= 3:
-            logger.debug(f'up_cnt={self.up_cnt} up_threshold={self.config.probe.up}')
-        if oughta_up:
-            self.switch(STATE.PRIMARY)
-
-    def refresh_state(self) -> STATE:
+    def current_state(self) -> STATE:
         state = get_state(self.config)
         if state != self.state:
             logger.warning(
-                f'route state changed externally: {self.state.name} -> {state.name}'
+                f'state switched externally: {self.state.name} -> {state.name}'
             )
             self.down_cnt = 0
             self.up_cnt = 0
@@ -156,10 +159,6 @@ class Monitor:
         self.up_cnt = 0
 
         if current_state != expec_state:
-            raise MwanRouteError(
-                f'route switch failed: expected={expec_state.name} current={current_state.name}'
-            )
+            self.state = STATE.UNKNOWN
 
-        logger.warning(
-            'route state changed: %s -> %s', previous_state.name, current_state.name
-        )
+        logger.warning(f'state switched: {previous_state.name} -> {current_state.name}')

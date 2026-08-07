@@ -27,11 +27,11 @@ def probe(
     uid = uuid.uuid4().hex[:4]
     for addr in config.probe.address:
         if quit_event is not None and quit_event.is_set():
-            return None
-
+            return
         try:
             puls = ping(config, addr)
         except MwanProbeError as exc:
+            puls = False
             if enable_log:
                 logger.debug(
                     'trans:%s addr:%s probe error: %s',
@@ -39,9 +39,6 @@ def probe(
                     addr,
                     exc,
                 )
-
-        if quit_event is not None and quit_event.is_set():
-            return None
 
         if enable_log:
             if puls:
@@ -60,7 +57,8 @@ def probe(
             return all(pulses)
         return any(pulses)
 
-    raise ValueError(f'unsupported probe state: {state}')
+    if state == STATE.UNKNOWN:
+        return
 
 
 __all__ = [probe]

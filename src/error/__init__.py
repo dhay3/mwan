@@ -8,3 +8,7 @@ class MwanRouteError(Exception):
 
 class MwanProbeError(Exception):
     pass
+
+
+class MwanMonitorError(Exception):
+    pass
