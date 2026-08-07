@@ -81,7 +81,8 @@ class Monitor:
 
     def delegate(self):
         state = self.refresh_state()
-
+        if self.state == STATE.UNKNOWN:
+            return
         up = probe(self.config, state, quit_event=self.quit)
 
         if up is None or self.quit.is_set():
@@ -129,8 +130,6 @@ class Monitor:
             self.down_cnt = 0
             self.up_cnt = 0
             self.state = state
-        if self.state == STATE.UNKNOWN:
-            return
         return self.state
 
     def switch(self, expec_state: STATE):
