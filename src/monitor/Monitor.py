@@ -42,9 +42,13 @@ class Monitor:
                     break
         finally:
             try:
-                restore_routes(self.db_path)
+                if self.config.general.restore:
+                    restore_routes(self.db_path)
+                else:
+                    self.db_path.unlink(missing_ok=True)
+                    logger.info('route restore disabled, skip to restore routes')
             except Exception:
-                logger.exception(f'failed to restore routes from {self.db_path}')
+                logger.exception(f'failed to clean up routes from {self.db_path}')
 
     def reload_config(self):
         if not self.config.general.hot_reload:

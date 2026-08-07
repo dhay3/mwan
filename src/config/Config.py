@@ -22,6 +22,10 @@ class GeneralConfig(BaseConfig):
         description='Enable hot reload',
         default=1,
     )
+    restore: Literal[0, 1] = Field(
+        description='Enable routes restore on exit',
+        default=1,
+    )
 
 
 class PrimaryConfig(BaseConfig):

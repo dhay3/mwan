@@ -5,6 +5,9 @@ debug = 0
 #Enable hot reload
 hot_reload = 1
 
+#Enable routes restore on exit
+restore = 1
+
 [Primary]
 #Primary Route NIC
 dev = "ens19"
@@ -19,7 +22,7 @@ address = ["dns.aliyun.com:80", "119.29.29.29"]
 #eg. address = ["223.5.5.5:80", "119.29.29.29"]
 #eg. address = ["192.100.100.100","192.100.100.101"]
 
-#Number of ping
+#Number of pings
 count = 1
 
 #Seconds of ping timeout
