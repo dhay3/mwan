@@ -19,7 +19,7 @@ class GeneralConfig(BaseConfig):
         default=0,
     )
     hot_reload: Literal[0, 1] = Field(
-        description='Enable hot reload',
+        description='Enable config hot reload',
         default=1,
     )
     restore: Literal[0, 1] = Field(

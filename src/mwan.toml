@@ -2,7 +2,7 @@
 #Enable debug log
 debug = 0
 
-#Enable hot reload
+#Enable config hot reload
 hot_reload = 1
 
 #Enable routes restore on exit

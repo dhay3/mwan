@@ -4,6 +4,7 @@ import logging
 
 from pathlib import Path
 from .Config import MwanConfig
+from .State import STATE
 from error import MwanConfigError
 
 logger = logging.getLogger('Config')
@@ -26,8 +27,31 @@ def get_config_mtime(path: Path):
         raise MwanConfigError(f'failed to get config mtime from {path}') from exc
 
 
+def get_state(config: MwanConfig) -> STATE:
+    from route import show_default_routes
+
+    def route_metric(route):
+        return route.metric if route.metric is not None else 0
+
+    primary_routes = show_default_routes(config.primary.dev)
+    backup_routes = show_default_routes(config.backup.dev)
+
+    if not primary_routes or not backup_routes:
+        return STATE.UNKNOWN
+
+    primary_metric = route_metric(min(primary_routes, key=route_metric))
+    backup_metric = route_metric(min(backup_routes, key=route_metric))
+
+    if primary_metric < backup_metric:
+        return STATE.PRIMARY
+    if primary_metric > backup_metric:
+        return STATE.BACKUP
+    return STATE.UNKNOWN
+
+
 __all__ = [
     MwanConfig,
     load_config,
     get_config_mtime,
+    get_state,
 ]

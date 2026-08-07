@@ -17,19 +17,19 @@ from error import MwanRouteError
 logger = logging.getLogger('Route')
 
 
+def show_default_routes(dev: str) -> list[Route]:
+    return [
+        route.model_copy(update={'dev': route.dev or dev})
+        for route in show_route(['default', 'dev', dev])
+    ]
+
+
 def show_default_route(dev: str) -> Route:
     defaults = show_default_routes(dev)
     if not defaults:
         raise MwanRouteError(f'no default route for dev: {dev}')
 
     return min(defaults, key=lambda item: item.metric or 0)
-
-
-def show_default_routes(dev: str) -> list[Route]:
-    return [
-        route.model_copy(update={'dev': route.dev or dev})
-        for route in show_route(['default', 'dev', dev])
-    ]
 
 
 def add_default_route(route: Route):

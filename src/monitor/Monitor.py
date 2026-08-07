@@ -3,7 +3,7 @@ from pathlib import Path
 from threading import Event
 
 
-from config import MwanConfig, load_config, get_config_mtime
+from config import MwanConfig, load_config, get_config_mtime, get_state
 from config.State import STATE
 from utils.logger import set_debug
 from probe import probe
@@ -12,6 +12,7 @@ from route import (
     save_routes,
     switch_default_route,
 )
+from error import MwanRouteError
 
 
 logger = logging.getLogger('Monitor')
@@ -25,7 +26,8 @@ class Monitor:
         set_debug(self.config.general.debug)
         self.down_cnt = 0
         self.up_cnt = 0
-        self.failover = False
+        self.state = get_state(self.config)
+        logger.info(f'initial state: {self.state.name}')
         self.db_path = config_path.with_suffix('.db')
         save_routes(self.config, self.db_path)
         self.quit: Event = Event()
@@ -75,15 +77,17 @@ class Monitor:
         set_debug(self.config.general.debug)
         self.down_cnt = 0
         self.up_cnt = 0
+        self.state = get_state(self.config)
 
     def delegate(self):
-        state = STATE.BACKUP if self.failover else STATE.PRIMARY
+        state = self.refresh_state()
+
         up = probe(self.config, state, quit_event=self.quit)
 
         if up is None or self.quit.is_set():
             return
 
-        if not self.failover:
+        if state == STATE.PRIMARY:
             if up:
                 self.down_cnt = 0
                 return
@@ -96,30 +100,51 @@ class Monitor:
             )
             if self.down_cnt <= 3:
                 logger.debug(
-                    'down_cnt=%s down_threshold=%s',
-                    self.down_cnt,
-                    self.config.probe.down,
+                    f'down_cnt={self.down_cnt} down_threshold={self.config.probe.down}'
                 )
             if oughta_down:
-                switch_default_route(self.config, STATE.BACKUP)
-                self.failover = True
+                self.switch_route(STATE.BACKUP)
             return
-        else:
-            if not up:
-                self.up_cnt = 0
-                return
 
-            self.up_cnt += 1
-            self.down_cnt = 0
-            oughta_up = (
-                self.config.probe.fast_recover or self.up_cnt >= self.config.probe.up
+        if not up:
+            self.up_cnt = 0
+            return
+
+        self.up_cnt += 1
+        self.down_cnt = 0
+        oughta_up = (
+            self.config.probe.fast_recover or self.up_cnt >= self.config.probe.up
+        )
+        if self.up_cnt <= 3:
+            logger.debug(f'up_cnt={self.up_cnt} up_threshold={self.config.probe.up}')
+        if oughta_up:
+            self.switch_route(STATE.PRIMARY)
+
+    def refresh_state(self) -> STATE:
+        state = get_state(self.config)
+        if state != self.state:
+            logger.warning(
+                f'route state changed externally: {self.state.name} -> {state.name}'
             )
-            if self.up_cnt <= 3:
-                logger.debug(
-                    'up_cnt=%s up_threshold=%s',
-                    self.up_cnt,
-                    self.config.probe.up,
-                )
-            if oughta_up:
-                switch_default_route(self.config, STATE.PRIMARY)
-                self.failover = False
+            self.down_cnt = 0
+            self.up_cnt = 0
+            self.state = state
+        if self.state == STATE.UNKNOWN:
+            return
+        return self.state
+
+    def switch_route(self, target: STATE):
+        previous = self.state
+        switch_default_route(self.config, target)
+        actual = get_state(self.config)
+        self.state = actual
+        self.down_cnt = 0
+        self.up_cnt = 0
+
+        if actual != target:
+            raise MwanRouteError(
+                f'route switch verification failed: expected={target.name} '
+                f'actual={actual.name}'
+            )
+
+        logger.warning('route state changed: %s -> %s', previous.name, actual.name)
