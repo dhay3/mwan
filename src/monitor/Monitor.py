@@ -103,7 +103,7 @@ class Monitor:
                     f'down_cnt={self.down_cnt} down_threshold={self.config.probe.down}'
                 )
             if oughta_down:
-                self.switch_route(STATE.BACKUP)
+                self.switch(STATE.BACKUP)
             return
 
         if not up:
@@ -118,7 +118,7 @@ class Monitor:
         if self.up_cnt <= 3:
             logger.debug(f'up_cnt={self.up_cnt} up_threshold={self.config.probe.up}')
         if oughta_up:
-            self.switch_route(STATE.PRIMARY)
+            self.switch(STATE.PRIMARY)
 
     def refresh_state(self) -> STATE:
         state = get_state(self.config)
@@ -133,18 +133,19 @@ class Monitor:
             return
         return self.state
 
-    def switch_route(self, target: STATE):
-        previous = self.state
-        switch_default_route(self.config, target)
-        actual = get_state(self.config)
-        self.state = actual
+    def switch(self, expec_state: STATE):
+        previous_state = self.state
+        switch_default_route(self.config, expec_state)
+        current_state = get_state(self.config)
+        self.state = current_state
         self.down_cnt = 0
         self.up_cnt = 0
 
-        if actual != target:
+        if current_state != expec_state:
             raise MwanRouteError(
-                f'route switch verification failed: expected={target.name} '
-                f'actual={actual.name}'
+                f'route switch failed: expected={expec_state.name} current={current_state.name}'
             )
 
-        logger.warning('route state changed: %s -> %s', previous.name, actual.name)
+        logger.warning(
+            'route state changed: %s -> %s', previous_state.name, current_state.name
+        )
