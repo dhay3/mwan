@@ -90,9 +90,7 @@ class Monitor:
 
     def delegate(self):
         current_state = self.current_state()
-        if current_state == STATE.UNKNOWN:
-            logger.info(f'enter {current_state} state')
-            return
+
         try:
             up = probe(self.config, current_state, quit_event=self.quit)
         except Exception:
@@ -100,6 +98,9 @@ class Monitor:
             return
 
         if up is None or self.quit.is_set():
+            return
+
+        if current_state == STATE.UNKNOWN:
             return
 
         if current_state == STATE.PRIMARY:

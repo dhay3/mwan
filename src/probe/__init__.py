@@ -57,5 +57,8 @@ def probe(
             return all(pulses)
         return any(pulses)
 
+    if state == STATE.UNKNOWN:
+        return any(pulses)
+
 
 __all__ = [probe]
