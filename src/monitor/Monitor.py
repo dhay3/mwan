@@ -9,7 +9,7 @@ from utils.logger import set_debug
 from probe import probe
 from route import (
     restore_routes,
-    save_routes,
+    store_routes,
     switch_default_route,
 )
 from error import MwanRouteError
@@ -29,7 +29,7 @@ class Monitor:
         self.state = get_state(self.config)
         logger.info(f'initial state: {self.state.name}')
         self.db_path = config_path.with_suffix('.db')
-        save_routes(self.config, self.db_path)
+        store_routes(self.config, self.db_path)
         self.quit: Event = Event()
 
     def stop(self, signum: int, frame=None):
@@ -43,15 +43,26 @@ class Monitor:
 
                 if self.quit.wait(self.config.probe.delay):
                     break
-        finally:
+        except BaseException:
             try:
-                if self.config.general.restore:
-                    restore_routes(self.db_path)
-                else:
-                    self.db_path.unlink(missing_ok=True)
-                    logger.info('route restore disabled, skip to restore routes')
+                self.cleanup(unexpected=True)
             except Exception:
-                logger.exception(f'failed to clean up routes from {self.db_path}')
+                logger.exception(f'failed to clean up: {self.db_path}')
+            raise
+        else:
+            self.cleanup()
+
+    def cleanup(self, unexpected=False):
+        if self.config.general.restore:
+            restore_routes(self.db_path)
+            return
+
+        if unexpected:
+            logger.warning(f'store routes on unexpected exit: {self.db_path}')
+            return
+
+        self.db_path.unlink(missing_ok=True)
+        logger.info('route restore disabled')
 
     def reload_config(self):
         if not self.config.general.hot_reload:

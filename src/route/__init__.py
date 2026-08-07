@@ -89,21 +89,34 @@ def same_route(left: Route, right: Route) -> bool:
     )
 
 
-def save_routes(config: MwanConfig, path: Path):
+def load_stored_routes(path: Path) -> list[Route]:
+    stored_routes = [
+        Route.model_validate(route)
+        for route in json.loads(path.read_text(encoding='utf-8')).get('routes', [])
+    ]
+    if not stored_routes:
+        raise MwanRouteError(f'empty stored routes: {path}')
+    return stored_routes
+
+
+def store_routes(config: MwanConfig, path: Path):
     if path.exists():
-        logger.warning(f'resume from an unclean shutdown, reusing: {path}')
+        load_stored_routes(path)
+        logger.warning(f'resume from an unexpected exit, reusing: {path}')
         return
     devices = dict.fromkeys([config.primary.dev, config.backup.dev])
-    routes = []
+    current_routes = []
     for dev in devices:
         device_routes = show_default_routes(dev)
-        routes.extend(device_routes)
-    state = {
-        'routes': [route.model_dump(mode='json') for route in routes],
+        if not device_routes:
+            raise MwanRouteError(f'empty routes: {dev}')
+        current_routes.extend(device_routes)
+    stored_routes = {
+        'routes': [route.model_dump(mode='json') for route in current_routes],
     }
     temp = path.with_suffix(f'{path.suffix}.tmp')
     temp.write_text(
-        json.dumps(state, indent=2, ensure_ascii=False),
+        json.dumps(stored_routes, indent=2, ensure_ascii=False),
         encoding='utf-8',
     )
     temp.replace(path)
@@ -114,23 +127,22 @@ def restore_routes(path: Path):
     if not path.exists():
         return
 
-    state = json.loads(path.read_text(encoding='utf-8'))
-    stored_routes = [Route.model_validate(route) for route in state.get('routes', [])]
+    stored_routes = load_stored_routes(path)
 
-    routes: dict[str, list[Route]] = {}
-    for desired_route in stored_routes:
-        routes.setdefault(desired_route.dev, []).append(desired_route)
+    desired_routes: dict[str, list[Route]] = {}
+    for stored_route in stored_routes:
+        desired_routes.setdefault(stored_route.dev, []).append(stored_route)
 
-    for dev, desired_routes in routes.items():
+    for dev, dev_desired_routes in desired_routes.items():
         current_routes = show_default_routes(dev)
-        for desired_route in desired_routes:
-            if desired_route not in current_routes:
-                add_default_route(desired_route)
+        for stored_route in dev_desired_routes:
+            if stored_route not in current_routes:
+                add_default_route(stored_route)
 
         for current_route in current_routes:
-            if current_route not in desired_routes and any(
+            if current_route not in dev_desired_routes and any(
                 same_route(current_route, desired_route)
-                for desired_route in desired_routes
+                for desired_route in dev_desired_routes
             ):
                 del_default_route(current_route)
 
@@ -140,6 +152,6 @@ def restore_routes(path: Path):
 
 __all__ = [
     restore_routes,
-    save_routes,
+    store_routes,
     switch_default_route,
 ]
