@@ -49,11 +49,12 @@ class ProbeConfig(BaseConfig):
     address: list[Annotated[StrictStr, Field(min_length=1)]] = Field(
         description='Addresses for ping',
         default=['dns.aliyun.com:80', '119.29.29.29'],
+        min_length=1,
         validate_default=True,
     )
 
     count: Annotated[StrictInt, Field(ge=1)] = Field(
-        description='Number of ping',
+        description='Number of pings',
         default=1,
     )
     timeout: Annotated[StrictInt, Field(ge=1)] = Field(
@@ -68,16 +69,24 @@ class ProbeConfig(BaseConfig):
         description='Number of DOWN probes to switch to Backup',
         default=3,
     )
-    fast_down: Literal[0, 1] = Field(
-        description='Failover quickly on DOWN',
+    down_strategy: Literal[0, 1] = Field(
+        description='Strategy of probes mark DOWN (0: Passive 1: Positive)',
+        default=1,
+    )
+    fast_failover: Literal[0, 1] = Field(
+        description='Failover to Backup route quickly on DOWN',
         default=0,
     )
     up: Annotated[StrictInt, Field(ge=1)] = Field(
         description='Number of UP Probes to switch back to Primary',
         default=5,
     )
-    fast_up: Literal[0, 1] = Field(
-        description='Recover quickly on UP',
+    up_strategy: Literal[0, 1] = Field(
+        description='Strategy of probes mark UP (0: Passive 1: Positive)',
+        default=0,
+    )
+    fast_recover: Literal[0, 1] = Field(
+        description='Recover to Primary route quickly on UP',
         default=0,
     )
 

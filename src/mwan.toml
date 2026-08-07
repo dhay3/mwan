@@ -34,11 +34,17 @@ delay = 3
 #Number of DOWN probes to switch to Backup route
 down = 3
 
-#Failover quickly on DOWN
-fast_down = 0
+#Strategy of probes mark DOWN (0: Passive 1: Positive)
+down_strategy = 1
+
+#Failover to Backup route quickly on DOWN
+fast_failover = 0
 
 #Number of UP Probes to switch back to Primary route
 up = 5
 
-#Recover quickly on UP
-fast_up = 0
+#Strategy of probes mark UP (0: Passive 1: Positive)
+up_strategy = 0
+
+#Recover to Primary route quickly on UP
+fast_recover = 0

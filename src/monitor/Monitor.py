@@ -25,9 +25,10 @@ class Monitor:
         set_debug(self.config.general.debug)
         self.down_cnt = 0
         self.up_cnt = 0
-        self.quit: Event = Event()
+        self.failover = False
         self.db_path = config_path.with_suffix('.db')
         save_routes(self.config, self.db_path)
+        self.quit: Event = Event()
 
     def stop(self, signum: int, frame=None):
         self.quit.set()
@@ -76,16 +77,22 @@ class Monitor:
         self.up_cnt = 0
 
     def delegate(self):
-        down = probe(self.config, quit_event=self.quit)
+        state = STATE.BACKUP if self.failover else STATE.PRIMARY
+        up = probe(self.config, state, quit_event=self.quit)
 
-        if down is None or self.quit.is_set():
+        if up is None or self.quit.is_set():
             return
 
-        if down:
+        if not self.failover:
+            if up:
+                self.down_cnt = 0
+                return
+
             self.down_cnt += 1
             self.up_cnt = 0
             oughta_down = (
-                self.config.probe.fast_down or self.down_cnt >= self.config.probe.down
+                self.config.probe.fast_failover
+                or self.down_cnt >= self.config.probe.down
             )
             if self.down_cnt <= 3:
                 logger.debug(
@@ -95,11 +102,18 @@ class Monitor:
                 )
             if oughta_down:
                 switch_default_route(self.config, STATE.BACKUP)
+                self.failover = True
             return
         else:
+            if not up:
+                self.up_cnt = 0
+                return
+
             self.up_cnt += 1
             self.down_cnt = 0
-            oughta_up = self.config.probe.fast_up or self.up_cnt >= self.config.probe.up
+            oughta_up = (
+                self.config.probe.fast_recover or self.up_cnt >= self.config.probe.up
+            )
             if self.up_cnt <= 3:
                 logger.debug(
                     'up_cnt=%s up_threshold=%s',
@@ -108,3 +122,4 @@ class Monitor:
                 )
             if oughta_up:
                 switch_default_route(self.config, STATE.PRIMARY)
+                self.failover = False

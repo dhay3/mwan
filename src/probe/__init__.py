@@ -3,6 +3,7 @@ import uuid
 from threading import Event
 
 from config import MwanConfig
+from config.State import STATE
 from . import ICMP, TCP
 
 
@@ -17,6 +18,7 @@ def ping(config: MwanConfig, addr: str) -> bool:
 
 def probe(
     config: MwanConfig,
+    state: STATE,
     enable_log: bool = True,
     quit_event: Event | None = None,
 ) -> bool | None:
@@ -44,12 +46,21 @@ def probe(
         if enable_log:
             if puls:
                 logger.debug(f'trans:{uid} addr:{addr} succeeded')
-                return False
             else:
                 logger.debug(f'trans:{uid} addr:{addr} timeouted')
+        pulses.append(puls)
 
-    down = not any(pulses)
-    return down
+    if state == STATE.PRIMARY:
+        if config.probe.down_strategy == 0:
+            return any(pulses)
+        return all(pulses)
+
+    if state == STATE.BACKUP:
+        if config.probe.up_strategy == 0:
+            return all(pulses)
+        return any(pulses)
+
+    raise ValueError(f'unsupported probe state: {state}')
 
 
 __all__ = [probe]
