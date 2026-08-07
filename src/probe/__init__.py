@@ -4,6 +4,7 @@ from threading import Event
 
 from config import MwanConfig
 from config.State import STATE
+from error import MwanProbeError
 from . import ICMP, TCP
 
 
@@ -30,8 +31,7 @@ def probe(
 
         try:
             puls = ping(config, addr)
-        except Exception as exc:
-            puls = False
+        except MwanProbeError as exc:
             if enable_log:
                 logger.debug(
                     'trans:%s addr:%s probe error: %s',

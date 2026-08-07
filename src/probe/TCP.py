@@ -11,7 +11,6 @@ from scapy.all import (
 
 from .ARP import arp_request, get_hwsrc
 from .DNS import resolve
-
 from error import MwanProbeError
 
 

@@ -10,7 +10,12 @@ from pydantic import (
 
 
 class BaseConfig(BaseModel):
-    model_config = ConfigDict(frozen=True, str_strip_whitespace=True, str_to_lower=True)
+    model_config = ConfigDict(
+        frozen=True,
+        str_strip_whitespace=True,
+        str_to_lower=True,
+        extra='forbid',
+    )
 
 
 class GeneralConfig(BaseConfig):

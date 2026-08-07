@@ -94,7 +94,11 @@ class Monitor:
         state = self.refresh_state()
         if self.state == STATE.UNKNOWN:
             return
-        up = probe(self.config, state, quit_event=self.quit)
+        try:
+            up = probe(self.config, state, quit_event=self.quit)
+        except Exception:
+            logger.exception('probe cycle failed; counters remain unchanged')
+            return
 
         if up is None or self.quit.is_set():
             return

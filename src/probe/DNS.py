@@ -31,6 +31,9 @@ def resolve(host: str, dev: str, timeout: int) -> str:
         except AddressValueError:
             continue
 
+    if not nameservers:
+        raise MwanProbeError('no usable DNS nameserver')
+
     for nameserver in nameservers:
         try:
             dst_hwaddr = get_hwsrc(arp_request(src_addr, nameserver, dev, timeout))
