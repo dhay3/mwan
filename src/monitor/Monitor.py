@@ -130,7 +130,7 @@ class Monitor:
             self.up_cnt += 1
             self.down_cnt = 0
             oughta_up = (
-                self.config.probe.fast_failover or self.up_cnt >= self.config.probe.up
+                self.config.probe.fast_recover or self.up_cnt >= self.config.probe.up
             )
             if self.up_cnt <= 3:
                 logger.debug(
@@ -161,5 +161,6 @@ class Monitor:
 
         if current_state != expec_state:
             self.state = STATE.UNKNOWN
+            return
 
         logger.warning(f'state switched: {previous_state.name} -> {current_state.name}')
