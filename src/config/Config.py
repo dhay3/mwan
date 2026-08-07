@@ -13,6 +13,17 @@ class BaseConfig(BaseModel):
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, str_to_lower=True)
 
 
+class GeneralConfig(BaseConfig):
+    debug: Literal[0, 1] = Field(
+        description='Enable debug log',
+        default=0,
+    )
+    hot_reload: Literal[0, 1] = Field(
+        description='Enable hot reload',
+        default=1,
+    )
+
+
 class PrimaryConfig(BaseConfig):
     dev: Annotated[StrictStr, Field(min_length=1)] = Field(
         ...,
@@ -68,10 +79,7 @@ class ProbeConfig(BaseConfig):
 
 
 class MwanConfig(BaseConfig):
-    debug: Literal[0, 1] = Field(
-        description='Enable debug log',
-        default=0,
-    )
+    general: GeneralConfig = Field(alias='General')
     primary: PrimaryConfig = Field(alias='Primary')
     backup: BackupConfig = Field(alias='Backup')
     probe: ProbeConfig = Field(alias='Probe')

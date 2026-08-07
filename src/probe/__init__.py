@@ -44,9 +44,9 @@ def probe(
         if enable_log:
             if puls:
                 logger.debug(f'trans:{uid} addr:{addr} succeeded')
+                return False
             else:
                 logger.debug(f'trans:{uid} addr:{addr} timeouted')
-        pulses.append(puls)
 
     down = not any(pulses)
     return down

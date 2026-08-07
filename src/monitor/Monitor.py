@@ -22,7 +22,7 @@ class Monitor:
         self.config_path = config_path
         self.config: MwanConfig = load_config(config_path)
         self.config_mtime = get_config_mtime(config_path)
-        set_debug(self.config.debug)
+        set_debug(self.config.general.debug)
         self.down_cnt = 0
         self.up_cnt = 0
         self.quit: Event = Event()
@@ -47,6 +47,9 @@ class Monitor:
                 logger.exception(f'failed to restore routes from {self.db_path}')
 
     def reload_config(self):
+        if not self.config.general.hot_reload:
+            return
+
         mtime = get_config_mtime(self.config_path)
         if mtime is None or mtime == self.config_mtime:
             return
@@ -64,7 +67,7 @@ class Monitor:
             return
 
         self.config = config
-        set_debug(self.config.debug)
+        set_debug(self.config.general.debug)
         self.down_cnt = 0
         self.up_cnt = 0
 
