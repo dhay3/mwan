@@ -63,7 +63,11 @@ class ProbeConfig(BaseConfig):
     )
     dns: list[IPv4Address] = Field(
         description='DNS servers',
-        default=[IPv4Address('223.5.5.5'), IPv4Address('1.1.1.1')],
+        default=[
+            IPv4Address('223.5.5.5'),
+            IPv4Address('119.29.29.29'),
+            IPv4Address('1.1.1.1'),
+        ],
         min_length=1,
         validate_default=True,
     )
