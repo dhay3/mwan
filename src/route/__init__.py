@@ -102,7 +102,7 @@ def load_stored_routes(path: Path) -> list[Route]:
 def store_routes(config: MwanConfig, path: Path):
     if path.exists():
         load_stored_routes(path)
-        logger.warning(f'resume from an unexpected exit, reusing: {path}')
+        logger.warning(f'resume routes from {path}')
         return
     devices = dict.fromkeys([config.primary.dev, config.backup.dev])
     current_routes = []
@@ -120,7 +120,7 @@ def store_routes(config: MwanConfig, path: Path):
         encoding='utf-8',
     )
     temp.replace(path)
-    logger.info(f'store routes: {path}')
+    logger.info(f'store routes to {path}')
 
 
 def restore_routes(path: Path):
@@ -147,7 +147,7 @@ def restore_routes(path: Path):
                 del_default_route(current_route)
 
     path.unlink()
-    logger.info(f'restored routes: {path}')
+    logger.info(f'restored routes from {path}')
 
 
 __all__ = [

@@ -69,7 +69,7 @@ class Monitor:
         try:
             mtime = get_config_mtime(self.config_path)
         except Exception:
-            logger.error('config reload failed: file stat ignored')
+            logger.error('get config stat failed')
             return
 
         if mtime == self.config_mtime:
@@ -78,14 +78,14 @@ class Monitor:
         try:
             config = load_config(self.config_path)
         except Exception:
-            logger.error('config reload failed: load config error')
+            logger.error('load config error')
             return
 
         if (
             config.primary.dev != self.config.primary.dev
             or config.backup.dev != self.config.backup.dev
         ):
-            logger.error('config reload failed: NIC has been shifted')
+            logger.error('NIC has been shifted')
             return
 
         self.config = config
