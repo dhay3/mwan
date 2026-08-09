@@ -45,7 +45,7 @@ class Monitor:
             try:
                 self.cleanup(unexpected=True)
             except Exception:
-                logger.exception(f'clean up failed: {self.db_path}')
+                logger.exception('clean up failed')
             raise
         else:
             self.cleanup()
@@ -56,7 +56,7 @@ class Monitor:
             return
 
         if unexpected:
-            logger.warning(f'store routes on unexpected exit: {self.db_path}')
+            logger.warning(f'dump routes to {self.db_path} unexpectedly')
             return
 
         self.db_path.unlink(missing_ok=True)
@@ -150,9 +150,7 @@ class Monitor:
     def current_state(self) -> STATE:
         state = get_state(self.config)
         if state != self.state:
-            logger.warning(
-                f'state switched externally: {self.state.name} -> {state.name}'
-            )
+            logger.warning(f'{self.state.name} -> {state.name}')
             self.down_cnt = 0
             self.up_cnt = 0
             self.state = state
@@ -170,4 +168,4 @@ class Monitor:
             self.state = STATE.UNKNOWN
             return
 
-        logger.warning(f'state switched: {previous_state.name} -> {current_state.name}')
+        logger.warning(f'{previous_state.name} -> {current_state.name}')
