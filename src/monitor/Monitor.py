@@ -66,23 +66,30 @@ class Monitor:
         if not self.config.general.hot_reload:
             return
 
-        mtime = get_config_mtime(self.config_path)
-        if mtime is None or mtime == self.config_mtime:
+        try:
+            mtime = get_config_mtime(self.config_path)
+        except Exception:
+            logger.error('config reload failed: file stat ignored')
             return
 
-        config = load_config(self.config_path)
-        self.config_mtime = mtime
+        if mtime == self.config_mtime:
+            return
+
+        try:
+            config = load_config(self.config_path)
+        except Exception:
+            logger.error('config reload failed: load config error')
+            return
 
         if (
             config.primary.dev != self.config.primary.dev
             or config.backup.dev != self.config.backup.dev
         ):
-            logger.error(
-                f'config reload conflict: primary: {self.config.primary.dev} -> {config.primary.dev}, backup: {self.config.backup.dev} -> {config.backup.dev}',
-            )
+            logger.error('config reload failed: NIC has been shifted')
             return
 
         self.config = config
+        self.config_mtime = mtime
         set_debug(self.config.general.debug)
         self.down_cnt = 0
         self.up_cnt = 0

@@ -6,7 +6,10 @@ from pydantic import (
     StrictStr,
     StrictInt,
     Field,
+    model_validator,
 )
+
+from error import MwanConfigError
 
 
 class BaseConfig(BaseModel):
@@ -101,3 +104,9 @@ class MwanConfig(BaseConfig):
     primary: PrimaryConfig = Field(alias='Primary')
     backup: BackupConfig = Field(alias='Backup')
     probe: ProbeConfig = Field(alias='Probe')
+
+    @model_validator(mode='after')
+    def validate_nic(self):
+        if self.primary.dev == self.backup.dev:
+            raise MwanConfigError('NIC must be different')
+        return self
