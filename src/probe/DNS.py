@@ -1,12 +1,12 @@
 from ipaddress import AddressValueError, IPv4Address
 
+from config import MwanConfig
 from scapy.all import (
     DNS,
     DNSQR,
     Ether,
     IP,
     UDP,
-    conf,
     get_if_addr,
     get_if_hwaddr,
     srp1,
@@ -16,30 +16,24 @@ from .ARP import arp_request, get_hwsrc
 from error import MwanProbeError
 
 
-def resolve(host: str, dev: str, timeout: int) -> str:
+def resolve(config: MwanConfig, host: str) -> str:
     try:
         return str(IPv4Address(host))
     except AddressValueError:
         pass
 
+    dev = config.primary.dev
+    timeout = config.probe.timeout
     src_addr = get_if_addr(dev)
     src_hwaddr = get_if_hwaddr(dev)
-    nameservers = []
-    for nameserver in conf.nameservers:
-        try:
-            nameservers.append(str(IPv4Address(nameserver)))
-        except AddressValueError:
-            continue
 
-    if not nameservers:
-        raise MwanProbeError('no usable DNS nameserver')
-
-    for nameserver in nameservers:
+    for nameserver in config.probe.dns:
+        nameserver_addr = str(nameserver)
         try:
-            dst_hwaddr = get_hwsrc(arp_request(src_addr, nameserver, dev, timeout))
+            dst_hwaddr = get_hwsrc(arp_request(src_addr, nameserver_addr, dev, timeout))
             packet = (
                 Ether(src=src_hwaddr, dst=dst_hwaddr)
-                / IP(src=src_addr, dst=nameserver)
+                / IP(src=src_addr, dst=nameserver_addr)
                 / UDP(dport=53)
                 / DNS(rd=1, qd=DNSQR(qname=host, qtype='A'))
             )
@@ -64,4 +58,5 @@ def resolve(host: str, dev: str, timeout: int) -> str:
             if answer.type == 1:
                 return str(IPv4Address(answer.rdata))
 
-    raise MwanProbeError(f'resolve failed via {dev}: {host}')
+    dns_servers = ','.join(str(nameserver) for nameserver in config.probe.dns)
+    raise MwanProbeError(f'dns resolve failed: {dev} [{dns_servers}] {host}')

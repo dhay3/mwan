@@ -34,7 +34,7 @@ def parse_addr(addr: str):
 def ping(config: MwanConfig, addr: str):
     host, port = parse_addr(addr)
     dev = config.primary.dev
-    dst_addr = resolve(host, dev, config.probe.timeout)
+    dst_addr = resolve(config, host)
     src_addr = get_if_addr(dev)
     src_hwaddr = get_if_hwaddr(dev)
     dst_hwaddr = get_hwsrc(arp_request(src_addr, dst_addr, dev, config.probe.timeout))

@@ -18,9 +18,12 @@ dev = "ens18"
 
 [Probe]
 #Addresses for ping
-address = ["dns.aliyun.com:80", "119.29.29.29"]
+address = ["dns.aliyun.com:443", "119.29.29.29"]
 #eg. address = ["223.5.5.5:80", "119.29.29.29"]
 #eg. address = ["192.100.100.100","192.100.100.101"]
+
+#DNS servers
+dns = ["223.5.5.5","119.29.29.29", "1.1.1.1"]
 
 #Number of pings
 count = 1

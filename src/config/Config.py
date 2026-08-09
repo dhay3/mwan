@@ -1,3 +1,4 @@
+from ipaddress import IPv4Address
 from typing import Annotated, Literal
 
 from pydantic import (
@@ -57,6 +58,12 @@ class ProbeConfig(BaseConfig):
     address: list[Annotated[StrictStr, Field(min_length=1)]] = Field(
         description='Addresses for ping',
         default=['dns.aliyun.com:80', '119.29.29.29'],
+        min_length=1,
+        validate_default=True,
+    )
+    dns: list[IPv4Address] = Field(
+        description='DNS servers',
+        default=[IPv4Address('223.5.5.5'), IPv4Address('1.1.1.1')],
         min_length=1,
         validate_default=True,
     )

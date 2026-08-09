@@ -95,7 +95,7 @@ def load_stored_routes(path: Path) -> list[Route]:
         for route in json.loads(path.read_text(encoding='utf-8')).get('routes', [])
     ]
     if not stored_routes:
-        raise MwanRouteError(f'empty stored routes: {path}')
+        raise MwanRouteError(f'stored routes empty: {path}')
     return stored_routes
 
 
@@ -120,7 +120,7 @@ def store_routes(config: MwanConfig, path: Path):
         encoding='utf-8',
     )
     temp.replace(path)
-    logger.info(f'saved routes: {path}')
+    logger.info(f'store routes: {path}')
 
 
 def restore_routes(path: Path):
