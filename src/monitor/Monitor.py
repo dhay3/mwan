@@ -158,14 +158,14 @@ class Monitor:
 
     def switch(self, expec_state: STATE):
         previous_state = self.state
-        switch_default_route(self.config, expec_state)
-        current_state = get_state(self.config)
-        self.state = current_state
-        self.down_cnt = 0
-        self.up_cnt = 0
+        if switch_default_route(self.config, expec_state):
+            current_state = get_state(self.config)
+            self.state = current_state
+            self.down_cnt = 0
+            self.up_cnt = 0
 
-        if current_state != expec_state:
-            self.state = STATE.UNKNOWN
-            return
+            if current_state != expec_state:
+                self.state = STATE.UNKNOWN
+                return
 
-        logger.warning(f'{previous_state.name} -> {current_state.name}')
+            logger.warning(f'{previous_state.name} -> {current_state.name}')

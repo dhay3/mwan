@@ -77,10 +77,10 @@ def switch_default_route(config: MwanConfig, state: STATE):
         primary_deft.metric = max(backup_metric - config.primary.step, 0)
 
     if primary_deft.metric == primary_deft_copy.metric:
-        return
+        return False
 
     if add_default_route(primary_deft) and del_default_route(primary_deft_copy):
-        logger.warning(f'switched to: {state.name}')
+        return True
 
 
 def same_route(left: Route, right: Route) -> bool:
