@@ -150,7 +150,7 @@ class Monitor:
     def current_state(self) -> STATE:
         state = get_state(self.config)
         if state != self.state:
-            logger.warning(f'{self.state.name} -> {state.name} externally')
+            logger.warning(f'{self.state.name} -> {state.name} E')
             self.down_cnt = 0
             self.up_cnt = 0
             self.state = state
