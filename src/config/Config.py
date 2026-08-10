@@ -1,5 +1,5 @@
 from ipaddress import IPv4Address
-from typing import Annotated, Literal
+from typing import Annotated
 
 from pydantic import (
     BaseModel,
@@ -12,7 +12,7 @@ from pydantic import (
 
 from error import MwanConfigError
 
-BoolInt = Annotated[StrictInt, Literal[0, 1]]
+BoolInt = Annotated[StrictInt, Field(ge=0, le=1)]
 PositiveInt = Annotated[StrictInt, Field(gt=0)]
 NonEmptyStr = Annotated[StrictStr, Field(min_length=1)]
 
@@ -132,15 +132,19 @@ class MwanConfig(BaseConfig):
             raise MwanConfigError('NIC must be different')
         if self.probe.address:
             for addr in self.probe.address:
-                if ':' in addr:
-                    if addr.endswith(':'):
-                        raise MwanConfigError(f'port missing: {addr}')
-                    port = addr.split(':')[-1]
-                    try:
-                        port = int(port)
-                        if port < 1 or port > 65535:
-                            raise MwanConfigError(f'port out of range: {addr}')
-                    except ValueError:
-                        raise MwanConfigError(f'port non-numeric: {addr}')
+                if ':' not in addr:
+                    continue
+                if addr.count(':') != 1:
+                    raise MwanConfigError(f'address invalid: {addr}')
+                host, port = addr.split(':')
+                if not host:
+                    raise MwanConfigError(f'host missing: {addr}')
+                if not port:
+                    raise MwanConfigError(f'port missing: {addr}')
+                if not port.isdecimal():
+                    raise MwanConfigError(f'port non-numeric: {addr}')
+                port = int(port)
+                if port < 1 or port > 65535:
+                    raise MwanConfigError(f'port out of range: {addr}')
 
         return self

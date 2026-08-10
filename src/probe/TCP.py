@@ -14,7 +14,8 @@ from .DNS import resolve
 
 
 def ping(config: MwanConfig, addr: str):
-    host, port = addr.split(':')
+    host, port = addr.split(':', maxsplit=1)
+    port = int(port)
     dev = config.primary.dev
     dst_addr = resolve(config, host)
     src_addr = get_if_addr(dev)
