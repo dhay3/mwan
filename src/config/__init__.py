@@ -14,17 +14,17 @@ def load_config(path: Path) -> MwanConfig:
     try:
         with path.open('rb') as config_file:
             logger.info(f'loading config from {path}')
-            data = tomllib.load(config_file)
-    except Exception as exc:
-        raise MwanConfigError(f'loading config from {path} failed') from exc
-    return MwanConfig.model_validate(data)
+            data = MwanConfig.model_validate(tomllib.load(config_file))
+    except Exception:
+        raise MwanConfigError(f'loading config from {path} failed')
+    return data
 
 
 def get_config_mtime(path: Path):
     try:
         return path.stat().st_mtime
-    except Exception as exc:
-        raise MwanConfigError(f'get config stat from {path} failed') from exc
+    except Exception:
+        raise MwanConfigError(f'reading config stat from {path} failed')
 
 
 def get_state(config: MwanConfig) -> STATE:

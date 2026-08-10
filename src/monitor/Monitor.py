@@ -66,11 +66,7 @@ class Monitor:
         if not self.config.general.hot_reload:
             return
 
-        try:
-            mtime = get_config_mtime(self.config_path)
-        except Exception:
-            logger.error('get config stat failed')
-            return
+        mtime = get_config_mtime(self.config_path)
 
         if mtime == self.config_mtime:
             return
