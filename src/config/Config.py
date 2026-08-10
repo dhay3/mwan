@@ -10,6 +10,7 @@ from pydantic import (
     model_validator,
 )
 
+from error import MwanConfigError
 
 BoolInt = Annotated[StrictInt, Literal[0, 1]]
 PositiveInt = Annotated[StrictInt, Field(gt=0)]
@@ -128,5 +129,18 @@ class MwanConfig(BaseConfig):
     @model_validator(mode='after')
     def validate(self):
         if self.primary.dev == self.backup.dev:
-            raise ValueError('primary and backup NIC must be different')
+            raise MwanConfigError('NIC must be different')
+        if self.probe.address:
+            for addr in self.probe.address:
+                if ':' in addr:
+                    if addr.endswith(':'):
+                        raise MwanConfigError(f'port missing: {addr}')
+                    port = addr.split(':')[-1]
+                    try:
+                        port = int(port)
+                        if port < 1 or port > 65535:
+                            raise MwanConfigError(f'port out of range: {addr}')
+                    except ValueError:
+                        raise MwanConfigError(f'port non-numeric: {addr}')
+
         return self

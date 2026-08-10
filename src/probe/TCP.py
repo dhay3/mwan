@@ -11,27 +11,10 @@ from scapy.all import (
 
 from .ARP import arp_request, get_hwsrc
 from .DNS import resolve
-from error import MwanConfigError
-
-
-def parse_addr(addr: str):
-    if addr.endswith(':'):
-        raise MwanConfigError(f'port missing: {addr}')
-
-    host, port = addr.split(':')
-
-    try:
-        port = int(port)
-        if port < 1 or port > 65535:
-            raise MwanConfigError(f'port out of range: {addr}')
-    except ValueError:
-        raise MwanConfigError(f'port non-numeric: {addr}')
-
-    return host, port
 
 
 def ping(config: MwanConfig, addr: str):
-    host, port = parse_addr(addr)
+    host, port = addr.split(':')
     dev = config.primary.dev
     dst_addr = resolve(config, host)
     src_addr = get_if_addr(dev)
