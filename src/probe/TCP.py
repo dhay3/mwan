@@ -11,22 +11,21 @@ from scapy.all import (
 
 from .ARP import arp_request, get_hwsrc
 from .DNS import resolve
-from error import MwanProbeError
+from error import MwanConfigError
 
 
 def parse_addr(addr: str):
-    if ':' not in addr or addr.endswith(':'):
-        raise MwanProbeError(f'missing port: {addr}')
+    if addr.endswith(':'):
+        raise MwanConfigError(f'port missing: {addr}')
 
     host, port = addr.split(':')
 
     try:
         port = int(port)
+        if port < 1 or port > 65535:
+            raise MwanConfigError(f'port out of range: {addr}')
     except ValueError:
-        raise MwanProbeError(f'invalid port: {addr}')
-
-    if port < 1 or port > 65535:
-        raise MwanProbeError(f'invalid port: {addr}')
+        raise MwanConfigError(f'port non-numeric: {addr}')
 
     return host, port
 

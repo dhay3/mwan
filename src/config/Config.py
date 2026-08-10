@@ -10,7 +10,10 @@ from pydantic import (
     model_validator,
 )
 
-from error import MwanConfigError
+
+BoolInt = Annotated[StrictInt, Literal[0, 1]]
+PositiveInt = Annotated[StrictInt, Field(gt=0)]
+NonEmptyStr = Annotated[StrictStr, Field(min_length=1)]
 
 
 class BaseConfig(BaseModel):
@@ -23,34 +26,34 @@ class BaseConfig(BaseModel):
 
 
 class GeneralConfig(BaseConfig):
-    debug: Literal[0, 1] = Field(
+    debug: BoolInt = Field(
         description='Enable debug log',
         default=0,
     )
-    hot_reload: Literal[0, 1] = Field(
+    hot_reload: BoolInt = Field(
         description='Enable config hot-reload',
         default=1,
     )
-    restore: Literal[0, 1] = Field(
+    restore: BoolInt = Field(
         description='Enable routes restore',
         default=1,
     )
 
 
 class PrimaryConfig(BaseConfig):
-    dev: Annotated[StrictStr, Field(min_length=1)] = Field(
+    dev: NonEmptyStr = Field(
         ...,
         description='Primary NIC',
         frozen=True,
     )
-    step: Annotated[StrictInt, Field(ge=1)] = Field(
+    step: PositiveInt = Field(
         description='Metric step',
         default=1,
     )
 
 
 class BackupConfig(BaseConfig):
-    dev: Annotated[StrictStr, Field(min_length=1)] = Field(
+    dev: NonEmptyStr = Field(
         ...,
         description='Backup NIC',
         frozen=True,
@@ -58,7 +61,7 @@ class BackupConfig(BaseConfig):
 
 
 class ProbeConfig(BaseConfig):
-    address: list[Annotated[StrictStr, Field(min_length=1)]] = Field(
+    address: list[NonEmptyStr] = Field(
         description='Addresses for pings',
         default=[
             'dns.aliyun.com:80',
@@ -78,39 +81,39 @@ class ProbeConfig(BaseConfig):
         validate_default=True,
     )
 
-    count: Annotated[StrictInt, Field(ge=1)] = Field(
+    count: PositiveInt = Field(
         description='Number of pings',
         default=1,
     )
-    timeout: Annotated[StrictInt, Field(ge=1)] = Field(
+    timeout: PositiveInt = Field(
         description='Seconds of ping timeout',
         default=1,
     )
-    delay: Annotated[StrictInt, Field(ge=3)] = Field(
+    delay: PositiveInt = Field(
         description='Delay seconds between probes',
         default=3,
     )
-    down: Annotated[StrictInt, Field(ge=1)] = Field(
+    down: PositiveInt = Field(
         description='Number of DOWN probes to switch to backup',
         default=3,
     )
-    down_strategy: Literal[0, 1] = Field(
+    down_strategy: BoolInt = Field(
         description='Strategy of probes mark DOWN (0: Passive 1: Positive)',
         default=1,
     )
-    fast_failover: Literal[0, 1] = Field(
+    fast_failover: BoolInt = Field(
         description='Failover to backup route quickly on DOWN',
         default=0,
     )
-    up: Annotated[StrictInt, Field(ge=1)] = Field(
+    up: PositiveInt = Field(
         description='Number of UP Probes to switch back to primary',
         default=5,
     )
-    up_strategy: Literal[0, 1] = Field(
+    up_strategy: BoolInt = Field(
         description='Strategy of probes mark UP (0: Passive 1: Positive)',
         default=0,
     )
-    fast_recover: Literal[0, 1] = Field(
+    fast_recover: BoolInt = Field(
         description='Recover to primary route quickly on UP',
         default=0,
     )
@@ -123,7 +126,7 @@ class MwanConfig(BaseConfig):
     probe: ProbeConfig = Field(alias='Probe')
 
     @model_validator(mode='after')
-    def validate_nic(self):
+    def validate(self):
         if self.primary.dev == self.backup.dev:
-            raise MwanConfigError('NIC must be different')
+            raise ValueError('primary and backup NIC must be different')
         return self
