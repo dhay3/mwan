@@ -28,11 +28,11 @@ class GeneralConfig(BaseConfig):
         default=0,
     )
     hot_reload: Literal[0, 1] = Field(
-        description='Enable config hot reload',
+        description='Enable config hot-reload',
         default=1,
     )
     restore: Literal[0, 1] = Field(
-        description='Enable routes restore on exit',
+        description='Enable routes restore',
         default=1,
     )
 
@@ -43,7 +43,10 @@ class PrimaryConfig(BaseConfig):
         description='Primary NIC',
         frozen=True,
     )
-    step: int = 1
+    step: Annotated[StrictInt, Field(ge=1)] = Field(
+        description='Metric step',
+        default=1,
+    )
 
 
 class BackupConfig(BaseConfig):

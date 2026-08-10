@@ -15,8 +15,8 @@ def load_config(path: Path) -> MwanConfig:
         with path.open('rb') as config_file:
             logger.info(f'loading config from {path}')
             data = MwanConfig.model_validate(tomllib.load(config_file))
-    except Exception:
-        raise MwanConfigError(f'loading config from {path} failed')
+    except Exception as exec:
+        raise MwanConfigError(f'loading config from {path} failed') from exec
     return data
 
 

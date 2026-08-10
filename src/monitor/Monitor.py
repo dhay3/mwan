@@ -10,6 +10,7 @@ from config import (
     get_state,
 )
 from config.State import STATE
+from error import MwanConfigError
 from utils.logger import set_debug
 from probe import probe
 from route import (
@@ -84,8 +85,7 @@ class Monitor:
             config.primary.dev != self.config.primary.dev
             or config.backup.dev != self.config.backup.dev
         ):
-            logger.error('NIC has been shifted')
-            return
+            raise MwanConfigError('NIC has been shifted')
 
         self.down_cnt = 0
         self.up_cnt = 0
@@ -151,7 +151,7 @@ class Monitor:
     def current_state(self) -> STATE:
         state = get_state(self.config)
         if state != self.state:
-            logger.warning(f'{self.state.name} -> {state.name} E')
+            logger.warning(f'{self.state.name} -> {state.name} ET')
             self.down_cnt = 0
             self.up_cnt = 0
             self.state = state
@@ -167,6 +167,9 @@ class Monitor:
 
             if current_state != expec_state:
                 self.state = STATE.UNKNOWN
+                logger.warning(
+                    f'{previous_state.name} -> {self.state.name} EXPEC: {expec_state.name}'
+                )
                 return
 
             logger.warning(f'{previous_state.name} -> {current_state.name}')
