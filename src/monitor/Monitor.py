@@ -20,15 +20,17 @@ logger = logging.getLogger('Monitor')
 class Monitor:
     def __init__(self, config_path: Path):
         self.config_path = config_path
+        self.db_path = config_path.with_suffix('.db')
+        self.quit: Event = Event()
+        self.down_cnt = 0
+        self.up_cnt = 0
+
         self.config: MwanConfig = load_config(config_path)
         self.config_mtime = get_config_mtime(config_path)
         set_debug(self.config.general.debug)
-        self.down_cnt = 0
-        self.up_cnt = 0
-        self.state = get_state(self.config)
-        self.db_path = config_path.with_suffix('.db')
+
         store_routes(self.config, self.db_path)
-        self.quit: Event = Event()
+        self.state = get_state(self.config)
 
     def stop(self, signum: int, frame=None):
         self.quit.set()
@@ -80,11 +82,13 @@ class Monitor:
             logger.error('NIC has been shifted')
             return
 
-        self.config = config
-        self.config_mtime = mtime
-        set_debug(self.config.general.debug)
         self.down_cnt = 0
         self.up_cnt = 0
+
+        self.config = config
+        self.config_mtime = mtime
+
+        set_debug(self.config.general.debug)
         self.state = get_state(self.config)
 
     def delegate(self):
