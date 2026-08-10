@@ -31,20 +31,21 @@ def resolve(config: MwanConfig, host: str) -> str:
         nameserver_addr = str(nameserver)
         try:
             dst_hwaddr = get_hwsrc(arp_request(src_addr, nameserver_addr, dev, timeout))
-            packet = (
-                Ether(src=src_hwaddr, dst=dst_hwaddr)
-                / IP(src=src_addr, dst=nameserver_addr)
-                / UDP(dport=53)
-                / DNS(rd=1, qd=DNSQR(qname=host, qtype='A'))
-            )
-            ans = srp1(
-                packet,
-                iface=dev,
-                timeout=timeout,
-                verbose=False,
-            )
-        except Exception:
+        except MwanProbeError:
             continue
+
+        packet = (
+            Ether(src=src_hwaddr, dst=dst_hwaddr)
+            / IP(src=src_addr, dst=nameserver_addr)
+            / UDP(dport=53)
+            / DNS(rd=1, qd=DNSQR(qname=host, qtype='A'))
+        )
+        ans = srp1(
+            packet,
+            iface=dev,
+            timeout=timeout,
+            verbose=False,
+        )
 
         if not ans or not ans.haslayer(DNS):
             continue
@@ -59,4 +60,4 @@ def resolve(config: MwanConfig, host: str) -> str:
                 return str(IPv4Address(answer.rdata))
 
     dns_servers = ','.join(str(nameserver) for nameserver in config.probe.dns)
-    raise MwanProbeError(f'dns resolve failed: {dev} [{dns_servers}] {host}')
+    raise MwanProbeError(f'dns resolve failed: {dev} {dns_servers} {host}')

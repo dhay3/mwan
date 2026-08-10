@@ -10,11 +10,11 @@ from error import MwanProbeError
 
 def arp_request(src: str, dst: str, dev: str, timeout: int):
     route = get_route(dst, ['from', src, 'oif', dev])
-    next_hop = route.gateway or dst
+    gw = route.gateway or dst
     packet = Ether(dst='ff:ff:ff:ff:ff:ff') / ARP(
         op='who-has',
         psrc=src,
-        pdst=next_hop,
+        pdst=gw,
     )
     ans = srp1(
         packet,
