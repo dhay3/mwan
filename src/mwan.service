@@ -8,7 +8,7 @@ StartLimitBurst=3
 [Service]
 Type=simple
 ExecStart=/opt/mwan/mwan --config /opt/mwan/mwan.toml
-TimeoutStopSec=15s
+TimeoutStopSec=30s
 Restart=on-failure
 RestartSec=5
 KillSignal=SIGTERM

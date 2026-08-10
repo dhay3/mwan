@@ -75,11 +75,7 @@ class Monitor:
         if mtime == self.config_mtime:
             return
 
-        try:
-            config = load_config(self.config_path)
-        except Exception:
-            logger.error('load config error')
-            return
+        config = load_config(self.config_path)
 
         if (
             config.primary.dev != self.config.primary.dev
