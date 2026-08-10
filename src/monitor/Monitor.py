@@ -3,7 +3,12 @@ from pathlib import Path
 from threading import Event
 
 
-from config import MwanConfig, load_config, get_config_mtime, get_state
+from config import (
+    MwanConfig,
+    load_config,
+    get_config_mtime,
+    get_state,
+)
 from config.State import STATE
 from utils.logger import set_debug
 from probe import probe
