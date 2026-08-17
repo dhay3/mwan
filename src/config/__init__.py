@@ -25,7 +25,7 @@ def get_config_mtime(path: Path):
     try:
         return path.stat().st_mtime
     except Exception:
-        raise MwanConfigError(f'reading config stat from {path} failed')
+        raise MwanConfigError(f'reading stat from {path} failed')
 
 
 def get_state(config: MwanConfig) -> STATE:

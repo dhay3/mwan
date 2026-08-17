@@ -89,7 +89,7 @@ def same_route(left: Route, right: Route) -> bool:
     )
 
 
-def load_stored_routes(path: Path) -> list[Route]:
+def load_stored_routes(path: Path):
     stored_routes = [
         Route.model_validate(route)
         for route in json.loads(path.read_text(encoding='utf-8')).get('routes', [])

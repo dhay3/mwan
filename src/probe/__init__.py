@@ -20,7 +20,6 @@ def ping(config: MwanConfig, addr: str) -> bool:
 def probe(
     config: MwanConfig,
     state: STATE,
-    enable_log: bool = True,
     quit_event: Event | None = None,
 ) -> bool | None:
     pulses = []
@@ -32,19 +31,17 @@ def probe(
             puls = ping(config, addr)
         except MwanProbeError as exc:
             puls = False
-            if enable_log:
-                logger.debug(
-                    'trans:%s addr:%s probe error: %s',
-                    uid,
-                    addr,
-                    exc,
-                )
+            logger.debug(
+                'trans:%s addr:%s probe error: %s',
+                uid,
+                addr,
+                exc,
+            )
 
-        if enable_log:
-            if puls:
-                logger.debug(f'trans:{uid} addr:{addr} succeeded')
-            else:
-                logger.debug(f'trans:{uid} addr:{addr} timeouted')
+        if puls:
+            logger.debug(f'trans:{uid} addr:{addr} succeeded')
+        else:
+            logger.debug(f'trans:{uid} addr:{addr} timeouted')
         pulses.append(puls)
 
     if state == STATE.PRIMARY:
