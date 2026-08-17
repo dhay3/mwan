@@ -10,6 +10,7 @@ from config import (
     get_state,
 )
 from config.State import STATE
+from error import MwanConfigError
 from utils.logger import set_debug
 from probe import probe
 from route import (
@@ -90,7 +91,7 @@ class Monitor:
             config.primary.dev != self.config.primary.dev
             or config.backup.dev != self.config.backup.dev
         ):
-            raise MwanConfig('config reload failed: NIC shifted')
+            raise MwanConfigError('config reload failed: NIC shifted')
 
         self.down_cnt = 0
         self.up_cnt = 0
