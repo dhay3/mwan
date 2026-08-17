@@ -8,16 +8,16 @@ from scapy.all import (
     srp1,
 )
 
-from .ARP import arp_request, get_hwsrc
-from .DNS import resolve
+from .ARP import resolve_hwaddr
+from .DNS import resolve_host
 
 
 def ping(config: MwanConfig, addr: str):
     dev = config.primary.dev
-    dst_addr = resolve(config, addr)
+    dst_addr = resolve_host(config, addr)
     src_addr = get_if_addr(dev)
     src_hwaddr = get_if_hwaddr(dev)
-    dst_hwaddr = get_hwsrc(arp_request(src_addr, dst_addr, dev, config.probe.timeout))
+    dst_hwaddr = resolve_hwaddr(src_addr, dst_addr, dev, config.probe.timeout)
     for _ in range(config.probe.count):
         packet = (
             Ether(

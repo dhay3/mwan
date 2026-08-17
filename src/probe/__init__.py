@@ -30,13 +30,8 @@ def probe(
         try:
             puls = ping(config, addr)
         except MwanProbeError as exc:
-            puls = False
-            logger.debug(
-                'trans:%s addr:%s probe error: %s',
-                uid,
-                addr,
-                exc,
-            )
+            logger.debug(f'trans:{uid} addr:{addr} error: {exc}')
+            continue
 
         if puls:
             logger.debug(f'trans:{uid} addr:{addr} succeeded')
