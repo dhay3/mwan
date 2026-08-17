@@ -28,7 +28,7 @@ def show_route(args: list[Any]) -> list[Route]:
         routes = json.loads(result.stdout or '[]')
     except json.JSONDecodeError as exec:
         raise MwanRouteError(f'failed to parse route: {command}') from exec
-    logger.debug(f'show: {command}')
+    # logger.debug(f'show: {command}')
     return [Route.model_validate(route) for route in routes]
 
 
