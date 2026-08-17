@@ -78,7 +78,9 @@ def resolve_host(config: MwanConfig, host: str) -> str:
                 dev,
                 timeout,
             )
-            return get_rdata(ans, dev, nameserver_addr, host)
+            rdata = get_rdata(ans, dev, nameserver_addr, host)
+            if rdata is not None:
+                return rdata
         except MwanProbeError:
             continue
 

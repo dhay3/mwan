@@ -29,8 +29,8 @@ def probe(
         try:
             puls = ping(config, addr)
         except Exception as exc:
+            puls = False
             logger.debug(f'trans:{uid} addr:{addr} error: {exc}')
-            continue
 
         if puls:
             logger.debug(f'trans:{uid} addr:{addr} succeeded')

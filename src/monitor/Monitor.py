@@ -10,7 +10,6 @@ from config import (
     get_state,
 )
 from config.State import STATE
-from error import MwanProbeError
 from utils.logger import set_debug
 from probe import probe
 from route import (
@@ -74,18 +73,24 @@ class Monitor:
         if not self.config.general.hot_reload:
             return
 
-        mtime = get_config_mtime(self.config_path)
+        try:
+            mtime = get_config_mtime(self.config_path)
+        except Exception:
+            return
 
         if mtime == self.config_mtime:
             return
 
-        config = load_config(self.config_path)
+        try:
+            config = load_config(self.config_path)
+        except Exception:
+            return
 
         if (
             config.primary.dev != self.config.primary.dev
             or config.backup.dev != self.config.backup.dev
         ):
-            raise MwanProbeError('NIC has been shifted')
+            raise MwanConfig('config reload failed: NIC shifted')
 
         self.down_cnt = 0
         self.up_cnt = 0
@@ -109,6 +114,25 @@ class Monitor:
             return
 
         if current_state == STATE.UNKNOWN:
+            if up:
+                self.up_cnt += 1
+                self.down_cnt = 0
+                oughta_up = (
+                    self.config.probe.fast_recover
+                    or self.up_cnt >= self.config.probe.up
+                )
+                if oughta_up:
+                    self.switch(STATE.PRIMARY)
+                return
+
+            self.down_cnt += 1
+            self.up_cnt = 0
+            oughta_down = (
+                self.config.probe.fast_failover
+                or self.down_cnt >= self.config.probe.down
+            )
+            if oughta_down:
+                self.switch(STATE.BACKUP)
             return
 
         if current_state == STATE.PRIMARY:

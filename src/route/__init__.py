@@ -66,21 +66,42 @@ def del_default_route(route: Route):
     return delete_route(args)
 
 
-def switch_default_route(config: MwanConfig, state: STATE):
-    primary_deft = show_default_route(config.primary.dev)
-    primary_deft_copy = deepcopy(primary_deft)
-    backup_deft = show_default_route(config.backup.dev)
-    backup_metric = backup_deft.metric or 0
-    if state == STATE.BACKUP:
-        primary_deft.metric = backup_metric + config.primary.step
-    elif state == STATE.PRIMARY:
-        primary_deft.metric = max(backup_metric - config.primary.step, 0)
-
-    if primary_deft.metric == primary_deft_copy.metric:
+def set_default_route_metric(route: Route, metric: int) -> bool:
+    if (route.metric or 0) == metric:
         return False
 
-    if add_default_route(primary_deft) and del_default_route(primary_deft_copy):
+    previous_route = deepcopy(route)
+    route.metric = metric
+    if add_default_route(route) and del_default_route(previous_route):
         return True
+    return False
+
+
+def switch_default_route(config: MwanConfig, state: STATE):
+    primary_deft = show_default_route(config.primary.dev)
+    backup_deft = show_default_route(config.backup.dev)
+    backup_metric = backup_deft.metric or 0
+
+    if state == STATE.BACKUP:
+        return set_default_route_metric(
+            primary_deft,
+            backup_metric + config.primary.step,
+        )
+
+    if state == STATE.PRIMARY:
+        primary_metric = max(backup_metric - config.primary.step, 0)
+        primary_changed = set_default_route_metric(primary_deft, primary_metric)
+
+        if primary_metric < backup_metric:
+            return primary_changed
+
+        backup_changed = set_default_route_metric(
+            backup_deft,
+            primary_metric + config.primary.step,
+        )
+        return primary_changed or backup_changed
+
+    return False
 
 
 def same_route(left: Route, right: Route) -> bool:
