@@ -10,6 +10,7 @@ from config import (
     get_state,
 )
 from config.State import STATE
+from error import MwanConfigError
 from utils.logger import set_debug
 from probe import probe
 from route import (
@@ -90,8 +91,11 @@ class Monitor:
             config.primary.dev != self.config.primary.dev
             or config.backup.dev != self.config.backup.dev
         ):
-            logger.error('NIC shifted')
-            return
+            raise MwanConfigError(
+                'NIC shifted: '
+                f'primary {self.config.primary.dev} -> {config.primary.dev}, '
+                f'backup {self.config.backup.dev} -> {config.backup.dev}'
+            )
 
         try:
             state = get_state(config)
