@@ -38,7 +38,7 @@ def get_state(config: MwanConfig) -> STATE:
     backup_routes = show_default_routes(config.backup.dev)
 
     if not primary_routes or not backup_routes:
-        return STATE.UNKNOWN
+        return STATE.MISSING
 
     primary_metric = route_metric(min(primary_routes, key=route_metric))
     backup_metric = route_metric(min(backup_routes, key=route_metric))

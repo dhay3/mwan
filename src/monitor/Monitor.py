@@ -112,6 +112,11 @@ class Monitor:
             logger.exception('route state unavailable')
             return
 
+        if current_state == STATE.MISSING:
+            self.down_cnt = 0
+            self.up_cnt = 0
+            return
+
         try:
             up = probe(self.config, current_state, quit_event=self.quit)
         except Exception:
@@ -132,16 +137,16 @@ class Monitor:
                 if oughta_up:
                     self.switch(STATE.PRIMARY)
                 return
-
-            self.down_cnt += 1
-            self.up_cnt = 0
-            oughta_down = (
-                self.config.probe.fast_failover
-                or self.down_cnt >= self.config.probe.down
-            )
-            if oughta_down:
-                self.switch(STATE.BACKUP)
-            return
+            else:
+                self.down_cnt += 1
+                self.up_cnt = 0
+                oughta_down = (
+                    self.config.probe.fast_failover
+                    or self.down_cnt >= self.config.probe.down
+                )
+                if oughta_down:
+                    self.switch(STATE.BACKUP)
+                return
 
         if current_state == STATE.PRIMARY:
             if up:
@@ -196,7 +201,7 @@ class Monitor:
                 return
             current_state = get_state(self.config)
         except Exception:
-            logger.exception(f'route switch to {expec_state.name} failed')
+            logger.exception(f'{previous_state.name} -> {expec_state.name} F')
             return
 
         self.state = current_state
@@ -204,9 +209,8 @@ class Monitor:
         self.up_cnt = 0
 
         if current_state != expec_state:
-            self.state = STATE.UNKNOWN
             logger.warning(
-                f'{previous_state.name} -> {self.state.name} EXPEC: {expec_state.name}'
+                f'{previous_state.name} -> {current_state.name} EXPEC: {expec_state.name}'
             )
             return
 
