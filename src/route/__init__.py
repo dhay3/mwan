@@ -110,19 +110,19 @@ def same_route(left: Route, right: Route) -> bool:
     )
 
 
-def load_stored_routes(path: Path):
+def load_reoutes(path: Path):
     stored_routes = [
         Route.model_validate(route)
         for route in json.loads(path.read_text(encoding='utf-8')).get('routes', [])
     ]
     if not stored_routes:
-        raise MwanRouteError(f'stored routes empty: {path}')
+        raise MwanRouteError(f'stored routes {path} empty')
     return stored_routes
 
 
 def store_routes(config: MwanConfig, path: Path):
     if path.exists():
-        load_stored_routes(path)
+        load_reoutes(path)
         logger.warning(f'resume routes from {path}')
         return
     devices = dict.fromkeys([config.primary.dev, config.backup.dev])
@@ -130,7 +130,7 @@ def store_routes(config: MwanConfig, path: Path):
     for dev in devices:
         device_routes = show_default_routes(dev)
         if not device_routes:
-            raise MwanRouteError(f'empty routes: {dev}')
+            raise MwanRouteError(f'missing route for {dev}')
         current_routes.extend(device_routes)
     stored_routes = {
         'routes': [route.model_dump(mode='json') for route in current_routes],
@@ -148,7 +148,7 @@ def restore_routes(path: Path):
     if not path.exists():
         return
 
-    stored_routes = load_stored_routes(path)
+    stored_routes = load_reoutes(path)
 
     desired_routes: dict[str, list[Route]] = {}
     for stored_route in stored_routes:

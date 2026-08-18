@@ -10,7 +10,6 @@ from config import (
     get_state,
 )
 from config.State import STATE
-from error import MwanConfigError
 from utils.logger import set_debug
 from probe import probe
 from route import (
@@ -91,19 +90,27 @@ class Monitor:
             config.primary.dev != self.config.primary.dev
             or config.backup.dev != self.config.backup.dev
         ):
-            raise MwanConfigError('config reload failed: NIC shifted')
+            logger.error('NIC shifted')
+            return
 
-        self.down_cnt = 0
-        self.up_cnt = 0
+        try:
+            state = get_state(config)
+        except Exception:
+            return
 
         self.config = config
         self.config_mtime = mtime
-
+        self.state = state
+        self.down_cnt = 0
+        self.up_cnt = 0
         set_debug(self.config.general.debug)
-        self.state = get_state(self.config)
 
     def delegate(self):
-        current_state = self.current_state()
+        try:
+            current_state = self.current_state()
+        except Exception:
+            logger.exception('route state unavailable')
+            return
 
         try:
             up = probe(self.config, current_state, quit_event=self.quit)
@@ -184,17 +191,23 @@ class Monitor:
 
     def switch(self, expec_state: STATE):
         previous_state = self.state
-        if switch_default_route(self.config, expec_state):
-            current_state = get_state(self.config)
-            self.state = current_state
-            self.down_cnt = 0
-            self.up_cnt = 0
-
-            if current_state != expec_state:
-                self.state = STATE.UNKNOWN
-                logger.warning(
-                    f'{previous_state.name} -> {self.state.name} EXPEC: {expec_state.name}'
-                )
+        try:
+            if not switch_default_route(self.config, expec_state):
                 return
+            current_state = get_state(self.config)
+        except Exception:
+            logger.exception(f'route switch to {expec_state.name} failed')
+            return
 
-            logger.warning(f'{previous_state.name} -> {current_state.name}')
+        self.state = current_state
+        self.down_cnt = 0
+        self.up_cnt = 0
+
+        if current_state != expec_state:
+            self.state = STATE.UNKNOWN
+            logger.warning(
+                f'{previous_state.name} -> {self.state.name} EXPEC: {expec_state.name}'
+            )
+            return
+
+        logger.warning(f'{previous_state.name} -> {current_state.name}')

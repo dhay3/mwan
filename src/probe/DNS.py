@@ -40,7 +40,7 @@ def dns_request(
     return ans
 
 
-def get_rdata(ans, dev: str, nameserver: str, host: str) -> str:
+def get_rdata(ans) -> str:
     if ans is None or not ans.haslayer(DNS):
         return
 
@@ -78,7 +78,7 @@ def resolve_host(config: MwanConfig, host: str) -> str:
                 dev,
                 timeout,
             )
-            rdata = get_rdata(ans, dev, nameserver_addr, host)
+            rdata = get_rdata(ans)
             if rdata is not None:
                 return rdata
         except MwanProbeError:

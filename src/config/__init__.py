@@ -6,6 +6,8 @@ from pathlib import Path
 from .Config import MwanConfig
 from .State import STATE
 from error import MwanConfigError
+from route import show_default_routes
+
 
 logger = logging.getLogger('Config')
 
@@ -29,8 +31,6 @@ def get_config_mtime(path: Path):
 
 
 def get_state(config: MwanConfig) -> STATE:
-    from route import show_default_routes
-
     def route_metric(route):
         return route.metric if route.metric is not None else 0
 
