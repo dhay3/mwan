@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from .Config import MwanConfig
 from .State import STATE
-from error import MwanConfigError
+from error import MwanConfigError, MwanRouteError
 from route import show_default_routes
 
 
@@ -37,11 +37,16 @@ def get_state(config: MwanConfig) -> STATE:
     primary_routes = show_default_routes(config.primary.dev)
     backup_routes = show_default_routes(config.backup.dev)
 
+    if len(primary_routes) > 1:
+        raise MwanRouteError(f'multiple default routes for dev: {config.primary.dev}')
+    if len(backup_routes) > 1:
+        raise MwanRouteError(f'multiple default routes for dev: {config.backup.dev}')
+
     if not primary_routes or not backup_routes:
         return STATE.MISSING
 
-    primary_metric = route_metric(min(primary_routes, key=route_metric))
-    backup_metric = route_metric(min(backup_routes, key=route_metric))
+    primary_metric = route_metric(primary_routes[0])
+    backup_metric = route_metric(backup_routes[0])
 
     if primary_metric < backup_metric:
         return STATE.PRIMARY

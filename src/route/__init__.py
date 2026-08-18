@@ -28,8 +28,10 @@ def show_default_route(dev: str) -> Route:
     defaults = show_default_routes(dev)
     if not defaults:
         raise MwanRouteError(f'no default route for dev: {dev}')
+    if len(defaults) > 1:
+        raise MwanRouteError(f'multiple default routes for dev: {dev}')
 
-    return min(defaults, key=lambda item: item.metric or 0)
+    return defaults[0]
 
 
 def add_default_route(route: Route):
@@ -131,7 +133,9 @@ def store_routes(config: MwanConfig, path: Path):
         device_routes = show_default_routes(dev)
         if not device_routes:
             raise MwanRouteError(f'missing route for {dev}')
-        current_routes.extend(device_routes)
+        if len(device_routes) > 1:
+            raise MwanRouteError(f'multiple default routes for dev: {dev}')
+        current_routes.append(device_routes[0])
     stored_routes = {
         'routes': [route.model_dump(mode='json') for route in current_routes],
     }
